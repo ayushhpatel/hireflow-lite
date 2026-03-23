@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: backend
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/hireflow}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none # Managed by Flyway later
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: ${SPRING_WEB_PORT:8080}

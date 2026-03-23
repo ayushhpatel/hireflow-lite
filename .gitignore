@@ -1,0 +1,21 @@
+# IDEs
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Docker
+postgres_data/
+
+# Environment
+.env
+.env.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
