@@ -15,6 +15,10 @@ interface Job {
 
 export function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [search, setSearch] = useState('');
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -26,8 +30,11 @@ export function JobsPage() {
   const fetchJobs = async () => {
     try {
       setIsLoading(true);
-      const res = await api.get('/jobs');
-      setJobs(res.data);
+      const res = await api.get('/jobs', {
+        params: { page, size: 9, search: search || undefined }
+      });
+      setJobs(res.data.content);
+      setTotalPages(res.data.totalPages);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load jobs');
     } finally {
@@ -37,7 +44,7 @@ export function JobsPage() {
 
   useEffect(() => {
     fetchJobs();
-  }, []);
+  }, [page, search]);
 
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,8 +115,23 @@ export function JobsPage() {
         {createError && <p className="mt-3 text-sm text-red-500 font-medium">{createError}</p>}
       </section>
 
+      {/* Jobs List Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+        <h2 className="text-xl font-bold text-slate-800">Active Postings</h2>
+        <div className="w-full sm:w-72">
+          <Input 
+            placeholder="Search by title..." 
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+          />
+        </div>
+      </div>
+
       {/* Jobs List */}
-      <section className="pt-2">
+      <section>
         {isLoading ? (
           <div className="py-20 flex justify-center items-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
@@ -158,6 +180,29 @@ export function JobsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        
+        {/* Pagination Controls */}
+        {!isLoading && !error && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-slate-200">
+            <Button 
+              className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm"
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              Previous
+            </Button>
+            <span className="text-sm font-medium text-slate-600">
+              Page {page + 1} of {totalPages}
+            </span>
+            <Button 
+              className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm"
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+            >
+              Next
+            </Button>
           </div>
         )}
       </section>

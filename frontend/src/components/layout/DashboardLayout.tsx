@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, LayoutDashboard, LogOut } from 'lucide-react';
+import { Briefcase, LayoutDashboard, Users, LogOut } from 'lucide-react';
 import { removeToken } from '../../lib/auth';
 
 export function DashboardLayout() {
@@ -37,6 +37,17 @@ export function DashboardLayout() {
           >
             <LayoutDashboard className="w-4 h-4" />
             Jobs
+          </Link>
+          <Link
+            to="/dashboard/candidates"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isActive('/candidates') 
+                ? 'bg-slate-100 text-slate-900' 
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Candidates
           </Link>
         </nav>
 

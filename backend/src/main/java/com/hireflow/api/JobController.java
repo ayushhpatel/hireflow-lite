@@ -2,6 +2,7 @@ package com.hireflow.api;
 
 import com.hireflow.dto.JobRequest;
 import com.hireflow.dto.JobResponse;
+import com.hireflow.dto.PaginatedResponse;
 import com.hireflow.security.CustomUserDetails;
 import com.hireflow.service.JobService;
 import jakarta.validation.Valid;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,8 +22,12 @@ public class JobController {
     private final JobService jobService;
 
     @GetMapping
-    public ResponseEntity<List<JobResponse>> getAllJobs(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(jobService.getAllJobs(userDetails.getOrgId()));
+    public ResponseEntity<PaginatedResponse<JobResponse>> getAllJobs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(jobService.getAllJobs(userDetails.getOrgId(), page, size, search));
     }
 
     @GetMapping("/{id}")

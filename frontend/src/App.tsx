@@ -4,6 +4,7 @@ import { RegisterPage } from './pages/Register';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { JobsPage } from './pages/Jobs';
 import { PipelineBoard } from './pages/PipelineBoard';
+import { CandidatesPage } from './pages/Candidates';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard/jobs" replace />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="jobs/:jobId/board" element={<PipelineBoard />} />
+          <Route path="candidates" element={<CandidatesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

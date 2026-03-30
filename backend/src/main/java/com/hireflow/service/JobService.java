@@ -2,12 +2,16 @@ package com.hireflow.service;
 
 import com.hireflow.dto.JobRequest;
 import com.hireflow.dto.JobResponse;
+import com.hireflow.dto.PaginatedResponse;
 import com.hireflow.model.Job;
 import com.hireflow.model.JobStatus;
 import com.hireflow.model.Organization;
 import com.hireflow.repository.JobRepository;
 import com.hireflow.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +27,22 @@ public class JobService {
     private final OrganizationRepository organizationRepository;
 
     @Transactional(readOnly = true)
-    public List<JobResponse> getAllJobs(UUID orgId) {
-        return jobRepository.findByOrganizationId(orgId)
+    public PaginatedResponse<JobResponse> getAllJobs(UUID orgId, int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Job> jobPage;
+        
+        if (search != null && !search.trim().isEmpty()) {
+            jobPage = jobRepository.findByOrganizationIdAndTitleContainingIgnoreCase(orgId, search.trim(), pageable);
+        } else {
+            jobPage = jobRepository.findByOrganizationId(orgId, pageable);
+        }
+        
+        List<JobResponse> content = jobPage.getContent()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+                
+        return new PaginatedResponse<>(jobPage, content);
     }
 
     @Transactional(readOnly = true)
