@@ -18,11 +18,8 @@ public class Candidate {
     @JoinColumn(name = "org_id", nullable = false)
     private Organization organization;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false)
     private String email;
