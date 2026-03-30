@@ -2,10 +2,13 @@ package com.hireflow.service;
 
 import com.hireflow.dto.CandidateRequest;
 import com.hireflow.dto.CandidateResponse;
+import com.hireflow.dto.NoteResponse;
 import com.hireflow.dto.PaginatedResponse;
 import com.hireflow.model.Candidate;
+import com.hireflow.model.Note;
 import com.hireflow.model.Organization;
 import com.hireflow.repository.CandidateRepository;
+import com.hireflow.repository.NoteRepository;
 import com.hireflow.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +27,7 @@ public class CandidateService {
 
     private final CandidateRepository candidateRepository;
     private final OrganizationRepository organizationRepository;
+    private final NoteRepository noteRepository;
 
     @Transactional(readOnly = true)
     public PaginatedResponse<CandidateResponse> getAllCandidates(UUID orgId, int page, int size, String search) {
@@ -61,6 +65,47 @@ public class CandidateService {
 
         Candidate saved = candidateRepository.save(candidate);
         return mapToResponse(saved);
+    }
+
+    @Transactional
+    public NoteResponse createNote(UUID candidateId, String content, UUID orgId) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+                
+        if (!candidate.getOrganization().getId().equals(orgId)) {
+            throw new RuntimeException("Candidate does not belong to your organization");
+        }
+        
+        Note note = new Note();
+        note.setCandidate(candidate);
+        note.setContent(content);
+        
+        Note saved = noteRepository.save(note);
+        
+        return NoteResponse.builder()
+                .id(saved.getId())
+                .content(saved.getContent())
+                .createdAt(saved.getCreatedAt())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoteResponse> getNotesByCandidate(UUID candidateId, UUID orgId) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+                
+        if (!candidate.getOrganization().getId().equals(orgId)) {
+            throw new RuntimeException("Candidate does not belong to your organization");
+        }
+        
+        return noteRepository.findByCandidateIdOrderByCreatedAtDesc(candidateId)
+                .stream()
+                .map(n -> NoteResponse.builder()
+                        .id(n.getId())
+                        .content(n.getContent())
+                        .createdAt(n.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private CandidateResponse mapToResponse(Candidate candidate) {

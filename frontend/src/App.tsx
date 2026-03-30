@@ -5,6 +5,7 @@ import { DashboardLayout } from './components/layout/DashboardLayout';
 import { JobsPage } from './pages/Jobs';
 import { PipelineBoard } from './pages/PipelineBoard';
 import { CandidatesPage } from './pages/Candidates';
+import { CandidateNotes } from './pages/CandidateNotes';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="jobs" element={<JobsPage />} />
           <Route path="jobs/:jobId/board" element={<PipelineBoard />} />
           <Route path="candidates" element={<CandidatesPage />} />
+          <Route path="candidates/:id/notes" element={<CandidateNotes />} />
         </Route>
       </Routes>
     </BrowserRouter>

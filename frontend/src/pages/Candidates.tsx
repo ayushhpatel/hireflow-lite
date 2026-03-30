@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -87,6 +88,7 @@ export function CandidatesPage() {
                   <th className="py-3 px-6">Name</th>
                   <th className="py-3 px-6">Email</th>
                   <th className="py-3 px-6">Created</th>
+                  <th className="py-3 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -102,6 +104,14 @@ export function CandidatesPage() {
                     </td>
                     <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{candidate.email}</td>
                     <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{formatDate(candidate.createdAt)}</td>
+                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <Link 
+                        to={`/dashboard/candidates/${candidate.id}/notes`}
+                        className="text-sm font-semibold px-3 py-1.5 rounded-md text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors inline-block"
+                      >
+                        Notes
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
