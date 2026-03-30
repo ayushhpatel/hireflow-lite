@@ -3,6 +3,7 @@ import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { JobsPage } from './pages/Jobs';
+import { PipelineBoard } from './pages/PipelineBoard';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="/dashboard/jobs" replace />} />
           <Route path="jobs" element={<JobsPage />} />
+          <Route path="jobs/:jobId/board" element={<PipelineBoard />} />
         </Route>
       </Routes>
     </BrowserRouter>

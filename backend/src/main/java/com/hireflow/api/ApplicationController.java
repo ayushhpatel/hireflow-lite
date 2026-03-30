@@ -2,6 +2,7 @@ package com.hireflow.api;
 
 import com.hireflow.dto.ApplicationRequest;
 import com.hireflow.dto.ApplicationResponse;
+import com.hireflow.dto.ApplicationStageRequest;
 import com.hireflow.security.CustomUserDetails;
 import com.hireflow.service.ApplicationService;
 import jakarta.validation.Valid;
@@ -34,5 +35,13 @@ public class ApplicationController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         ApplicationResponse response = applicationService.createApplication(request, userDetails.getOrgId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/{id}/stage")
+    public ResponseEntity<ApplicationResponse> updateApplicationStage(
+            @PathVariable UUID id,
+            @Valid @RequestBody ApplicationStageRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(applicationService.updateApplicationStage(id, request.getStage(), userDetails.getOrgId()));
     }
 }
