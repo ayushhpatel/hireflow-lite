@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Users, Mail, Calendar } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 interface Candidate {
   id: string;
@@ -80,29 +80,32 @@ export function CandidatesPage() {
             <p className="text-sm text-slate-500 mt-1">Try adjusting your search criteria.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="grid grid-cols-1 divide-y divide-slate-100">
-              {candidates.map((candidate) => (
-                <div key={candidate.id} className="p-5 hover:bg-slate-50 transition-colors flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
-                      {candidate.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900">{candidate.name}</h3>
-                      <div className="flex items-center text-sm text-slate-500 mt-0.5">
-                        <Mail className="w-3.5 h-3.5 mr-1.5" />
-                        {candidate.email}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                  <th className="py-3 px-6">Name</th>
+                  <th className="py-3 px-6">Email</th>
+                  <th className="py-3 px-6">Created</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {candidates.map((candidate) => (
+                  <tr key={candidate.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+                          {candidate.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-semibold text-slate-900">{candidate.name}</span>
                       </div>
-                    </div>
-                  </div>
-                  <div className="hidden sm:flex items-center text-sm text-slate-500">
-                    <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                    Added {formatDate(candidate.createdAt)}
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </td>
+                    <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{candidate.email}</td>
+                    <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{formatDate(candidate.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
         

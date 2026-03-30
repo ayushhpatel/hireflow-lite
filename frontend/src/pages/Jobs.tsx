@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Briefcase, Building2, Calendar } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -145,41 +145,42 @@ export function JobsPage() {
             <p className="text-sm text-slate-500 mt-1">Get started by creating a new job posting above.</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((job) => (
-              <div key={job.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow group flex flex-col">
-                <div className="flex justify-between items-start mb-5">
-                  <h3 className="font-semibold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors pr-3">
-                    {job.title}
-                  </h3>
-                  <span className={`inline-flex shrink-0 items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                    job.status === 'OPEN' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-700 border-slate-300'
-                  }`}>
-                    {job.status}
-                  </span>
-                </div>
-                
-                <div className="space-y-2.5 mt-auto">
-                  <div className="flex items-center text-sm text-slate-500">
-                    <Building2 className="w-4 h-4 mr-2.5 text-slate-400" />
-                    {job.department || 'No department'}
-                  </div>
-                  <div className="flex items-center text-sm text-slate-500">
-                    <Calendar className="w-4 h-4 mr-2.5 text-slate-400" />
-                    Created {formatDate(job.createdAt)}
-                  </div>
-                </div>
-
-                <div className="mt-5 pt-4 border-t border-slate-100">
-                  <Link 
-                    to={`/dashboard/jobs/${job.id}/board`}
-                    className="flex justify-center w-full items-center text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors py-2 rounded-lg"
-                  >
-                    View Pipeline
-                  </Link>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                  <th className="py-3 px-6">Title</th>
+                  <th className="py-3 px-6">Dept</th>
+                  <th className="py-3 px-6">Status</th>
+                  <th className="py-3 px-6">Created</th>
+                  <th className="py-3 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {jobs.map((job) => (
+                  <tr key={job.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-slate-900 whitespace-nowrap">{job.title}</td>
+                    <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{job.department || '—'}</td>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
+                        job.status === 'OPEN' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-700 border-slate-300'
+                      }`}>
+                        {job.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{formatDate(job.createdAt)}</td>
+                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <Link 
+                        to={`/dashboard/jobs/${job.id}/board`}
+                        className="text-sm font-semibold px-3 py-1.5 rounded-md text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors inline-block"
+                      >
+                        View Pipeline
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
         
