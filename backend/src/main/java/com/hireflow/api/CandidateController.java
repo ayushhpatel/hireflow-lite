@@ -2,6 +2,8 @@ package com.hireflow.api;
 
 import com.hireflow.dto.CandidateRequest;
 import com.hireflow.dto.CandidateResponse;
+import com.hireflow.dto.NoteRequest;
+import com.hireflow.dto.NoteResponse;
 import com.hireflow.dto.PaginatedResponse;
 import com.hireflow.security.CustomUserDetails;
 import com.hireflow.service.CandidateService;
@@ -11,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/candidates")
@@ -34,5 +39,21 @@ public class CandidateController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         CandidateResponse response = candidateService.createCandidate(request, userDetails.getOrgId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/{id}/notes")
+    public ResponseEntity<NoteResponse> createNote(
+            @PathVariable UUID id,
+            @Valid @RequestBody NoteRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        NoteResponse response = candidateService.createNote(id, request.getContent(), userDetails.getOrgId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{id}/notes")
+    public ResponseEntity<List<NoteResponse>> getNotes(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(candidateService.getNotesByCandidate(id, userDetails.getOrgId()));
     }
 }
