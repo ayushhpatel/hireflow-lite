@@ -66,6 +66,16 @@ public class ApplicationService {
         return mapToResponse(saved);
     }
 
+    @Transactional
+    public ApplicationResponse updateApplicationStage(UUID id, ApplicationStage stage, UUID orgId) {
+        Application application = applicationRepository.findByIdAndOrganizationId(id, orgId)
+                .orElseThrow(() -> new RuntimeException("Application not found or access denied"));
+        
+        application.setStage(stage);
+        Application saved = applicationRepository.save(application);
+        return mapToResponse(saved);
+    }
+
     private ApplicationResponse mapToResponse(Application app) {
         return ApplicationResponse.builder()
                 .id(app.getId())

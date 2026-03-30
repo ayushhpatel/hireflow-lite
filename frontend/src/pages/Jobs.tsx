@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Briefcase, Building2, Calendar } from 'lucide-react';
@@ -145,6 +146,15 @@ export function JobsPage() {
                     <Calendar className="w-4 h-4 mr-2.5 text-slate-400" />
                     Created {formatDate(job.createdAt)}
                   </div>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-slate-100">
+                  <Link 
+                    to={`/dashboard/jobs/${job.id}/board`}
+                    className="flex justify-center w-full items-center text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors py-2 rounded-lg"
+                  >
+                    View Pipeline
+                  </Link>
                 </div>
               </div>
             ))}
