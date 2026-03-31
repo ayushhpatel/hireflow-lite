@@ -88,30 +88,23 @@ export function CandidatesPage() {
                   <th className="py-3 px-6">Name</th>
                   <th className="py-3 px-6">Email</th>
                   <th className="py-3 px-6">Created</th>
-                  <th className="py-3 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {candidates.map((candidate) => (
                   <tr key={candidate.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+                      <Link to={`/dashboard/candidates/${candidate.id}`} className="group flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-xs mr-3 ring-1 ring-slate-200">
                           {candidate.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-semibold text-slate-900">{candidate.name}</span>
-                      </div>
+                        <span className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors">
+                          {candidate.name}
+                        </span>
+                      </Link>
                     </td>
                     <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{candidate.email}</td>
                     <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{formatDate(candidate.createdAt)}</td>
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                      <Link 
-                        to={`/dashboard/candidates/${candidate.id}/notes`}
-                        className="text-sm font-semibold px-3 py-1.5 rounded-md text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors inline-block"
-                      >
-                        Notes
-                      </Link>
-                    </td>
                   </tr>
                 ))}
               </tbody>

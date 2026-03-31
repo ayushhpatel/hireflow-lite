@@ -48,6 +48,17 @@ public class CandidateService {
         return new PaginatedResponse<>(candidatePage, content);
     }
 
+    @Transactional(readOnly = true)
+    public CandidateResponse getCandidateById(UUID candidateId, UUID orgId) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+                
+        if (!candidate.getOrganization().getId().equals(orgId)) {
+            throw new RuntimeException("Candidate does not belong to your organization");
+        }
+        return mapToResponse(candidate);
+    }
+
     @Transactional
     public CandidateResponse createCandidate(CandidateRequest request, UUID orgId) {
         if (candidateRepository.existsByEmailAndOrganizationId(request.getEmail(), orgId)) {
