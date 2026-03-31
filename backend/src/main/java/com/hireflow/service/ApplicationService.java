@@ -40,6 +40,17 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ApplicationResponse> getApplicationsForCandidate(UUID candidateId, UUID orgId) {
+        candidateRepository.findByIdAndOrganizationId(candidateId, orgId)
+                .orElseThrow(() -> new RuntimeException("Candidate not found or access denied"));
+        
+        return applicationRepository.findByCandidateIdAndOrganizationIdOrderByAppliedAtDesc(candidateId, orgId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public ApplicationResponse createApplication(ApplicationRequest request, UUID orgId) {
         Job job = jobRepository.findByIdAndOrganizationId(request.getJobId(), orgId)

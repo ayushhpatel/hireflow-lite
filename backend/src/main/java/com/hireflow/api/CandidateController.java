@@ -1,11 +1,13 @@
 package com.hireflow.api;
 
+import com.hireflow.dto.ApplicationResponse;
 import com.hireflow.dto.CandidateRequest;
 import com.hireflow.dto.CandidateResponse;
 import com.hireflow.dto.NoteRequest;
 import com.hireflow.dto.NoteResponse;
 import com.hireflow.dto.PaginatedResponse;
 import com.hireflow.security.CustomUserDetails;
+import com.hireflow.service.ApplicationService;
 import com.hireflow.service.CandidateService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.UUID;
 public class CandidateController {
 
     private final CandidateService candidateService;
+    private final ApplicationService applicationService;
 
     @GetMapping
     public ResponseEntity<PaginatedResponse<CandidateResponse>> getAllCandidates(
@@ -31,6 +34,20 @@ public class CandidateController {
             @RequestParam(required = false) String search,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(candidateService.getAllCandidates(userDetails.getOrgId(), page, size, search));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CandidateResponse> getCandidate(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(candidateService.getCandidateById(id, userDetails.getOrgId()));
+    }
+
+    @GetMapping("/{id}/applications")
+    public ResponseEntity<List<ApplicationResponse>> getApplicationsForCandidate(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(applicationService.getApplicationsForCandidate(id, userDetails.getOrgId()));
     }
 
     @PostMapping
