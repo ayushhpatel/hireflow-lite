@@ -25,6 +25,7 @@ export function JobsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDepartment, setNewDepartment] = useState('');
+  const [newDescription, setNewDescription] = useState('');
   const [createError, setCreateError] = useState('');
 
   const fetchJobs = async () => {
@@ -60,11 +61,13 @@ export function JobsPage() {
       await api.post('/jobs', {
         title: newTitle,
         department: newDepartment || null,
+        description: newDescription || null,
         status: 'OPEN'
       });
       // Reset form
       setNewTitle('');
       setNewDepartment('');
+      setNewDescription('');
       // Refresh list
       await fetchJobs();
     } catch (err: any) {
@@ -92,25 +95,37 @@ export function JobsPage() {
       {/* Create Job Form */}
       <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Post a new Job</h2>
-        <form onSubmit={handleCreateJob} className="flex flex-col sm:flex-row gap-4 items-start">
-          <div className="flex-1 w-full relative">
-            <Input 
-              placeholder="e.g. Senior Frontend Engineer" 
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              required
+        <form onSubmit={handleCreateJob} className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start">
+            <div className="flex-1 w-full relative">
+              <Input 
+                placeholder="e.g. Senior Frontend Engineer" 
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex-1 w-full">
+              <Input 
+                placeholder="Department (Optional)" 
+                value={newDepartment}
+                onChange={(e) => setNewDepartment(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="w-full">
+            <textarea
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              placeholder="Enter job description..."
+              className="w-full min-h-[100px] p-3 border border-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 resize-y"
             />
           </div>
-          <div className="flex-1 w-full">
-            <Input 
-              placeholder="Department (Optional)" 
-              value={newDepartment}
-              onChange={(e) => setNewDepartment(e.target.value)}
-            />
+          <div className="flex justify-end">
+            <Button type="submit" isLoading={isCreating} className="whitespace-nowrap px-8">
+              Create Job
+            </Button>
           </div>
-          <Button type="submit" isLoading={isCreating} className="whitespace-nowrap px-8">
-            Create Job
-          </Button>
         </form>
         {createError && <p className="mt-3 text-sm text-red-500 font-medium">{createError}</p>}
       </section>

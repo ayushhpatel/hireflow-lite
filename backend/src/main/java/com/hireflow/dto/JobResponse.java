@@ -12,6 +12,7 @@ public class JobResponse {
     private UUID id;
     private String title;
     private String department;
+    private String description;
     private JobStatus status;
     private LocalDateTime createdAt;
 }
