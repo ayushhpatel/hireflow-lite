@@ -23,6 +23,9 @@ public class Job {
 
     private String department;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private JobStatus status = JobStatus.OPEN;

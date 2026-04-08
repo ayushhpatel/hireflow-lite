@@ -11,5 +11,7 @@ public class JobRequest {
     
     private String department;
     
+    private String description;
+    
     private JobStatus status;
 }

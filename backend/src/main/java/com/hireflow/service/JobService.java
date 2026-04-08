@@ -61,6 +61,7 @@ public class JobService {
                 .organization(org)
                 .title(request.getTitle())
                 .department(request.getDepartment())
+                .description(request.getDescription())
                 .status(request.getStatus() != null ? request.getStatus() : JobStatus.OPEN)
                 .build();
                 
@@ -75,6 +76,7 @@ public class JobService {
                 
         job.setTitle(request.getTitle());
         job.setDepartment(request.getDepartment());
+        job.setDescription(request.getDescription());
         if (request.getStatus() != null) {
             job.setStatus(request.getStatus());
         }
@@ -93,6 +95,7 @@ public class JobService {
                 .id(job.getId())
                 .title(job.getTitle())
                 .department(job.getDepartment())
+                .description(job.getDescription())
                 .status(job.getStatus())
                 .createdAt(job.getCreatedAt())
                 .build();

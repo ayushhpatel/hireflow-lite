@@ -19,5 +19,6 @@ public interface CandidateRepository extends JpaRepository<Candidate, UUID> {
            "LOWER(c.email) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Candidate> searchByOrgAndKeyword(@Param("orgId") UUID orgId, @Param("search") String search, Pageable pageable);
     Optional<Candidate> findByIdAndOrganizationId(UUID id, UUID organizationId);
+    Optional<Candidate> findByEmailAndOrganizationId(String email, UUID organizationId);
     boolean existsByEmailAndOrganizationId(String email, UUID organizationId);
 }
