@@ -18,6 +18,9 @@ spring:
       hibernate:
         format_sql: true
 
+  flyway:
+    baseline-on-migrate: true   # ✅ FIX ADDED
+
 server:
   port: ${PORT:8080}
 
