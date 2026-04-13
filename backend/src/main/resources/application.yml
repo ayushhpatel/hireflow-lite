@@ -29,7 +29,12 @@ security:
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     expiration: 86400000
 
+resend:
+  api:
+    key: ${RESEND_API_KEY:re_cwk6BuMZ_L4BR27Cyc1hmBMyLV1e3fwMH}
+
 logging:
   level:
     org.flywaydb: DEBUG
     org.springframework.boot.autoconfigure.flyway: DEBUG
+

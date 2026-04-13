@@ -27,6 +27,7 @@ public class ApplicationService {
     private final CandidateRepository candidateRepository;
     private final JobRepository jobRepository;
     private final OrganizationRepository organizationRepository;
+    private final EmailService emailService;
 
     @Transactional(readOnly = true)
     public List<ApplicationResponse> getApplicationsForJob(UUID jobId, UUID orgId) {
@@ -84,6 +85,15 @@ public class ApplicationService {
         
         application.setStage(stage);
         Application saved = applicationRepository.save(application);
+
+        // Async dispatch
+        emailService.sendStatusUpdateEmail(
+                application.getCandidate().getEmail(),
+                application.getJob().getTitle(),
+                stage.name(),
+                application.getOrganization().getName()
+        );
+
         return mapToResponse(saved);
     }
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Mail, User } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-export type Stage = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED';
+export type Stage = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'HIRED' | 'REJECTED';
 
 export interface Application {
   id: string;
@@ -23,7 +23,7 @@ export function ApplicationCard({ application, onUpdateStage }: Props) {
     switch (current) {
       case 'APPLIED': return 'SCREENING';
       case 'SCREENING': return 'INTERVIEW';
-      case 'INTERVIEW': return 'OFFER';
+      case 'INTERVIEW': return 'HIRED';
       default: return null;
     }
   };
@@ -64,7 +64,7 @@ export function ApplicationCard({ application, onUpdateStage }: Props) {
           </Button>
         )}
         
-        {currentStage !== 'REJECTED' && currentStage !== 'OFFER' && (
+        {currentStage !== 'REJECTED' && currentStage !== 'HIRED' && (
           <button 
             disabled={isLoading}
             onClick={() => handleUpdate('REJECTED')}
