@@ -15,7 +15,7 @@ export function StageColumn({ title, stage, applications, onUpdateStage }: Props
       case 'APPLIED': return 'bg-slate-100 text-slate-700 border-slate-200';
       case 'SCREENING': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'INTERVIEW': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-      case 'OFFER': return 'bg-green-50 text-green-700 border-green-200';
+      case 'HIRED': return 'bg-green-50 text-green-700 border-green-200';
       case 'REJECTED': return 'bg-red-50 text-red-700 border-red-200';
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
@@ -40,10 +40,10 @@ export function StageColumn({ title, stage, applications, onUpdateStage }: Props
           </div>
         ) : (
           applications.map(app => (
-            <ApplicationCard 
-              key={app.id} 
-              application={app} 
-              onUpdateStage={onUpdateStage} 
+            <ApplicationCard
+              key={app.id}
+              application={app}
+              onUpdateStage={onUpdateStage}
             />
           ))
         )}

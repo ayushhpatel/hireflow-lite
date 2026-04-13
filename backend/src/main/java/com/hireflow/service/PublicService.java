@@ -27,6 +27,7 @@ public class PublicService {
     private final JobRepository jobRepository;
     private final CandidateRepository candidateRepository;
     private final ApplicationRepository applicationRepository;
+    private final EmailService emailService;
 
     @Transactional(readOnly = true)
     public List<JobResponse> getOpenJobs() {
@@ -81,6 +82,13 @@ public class PublicService {
                 .build();
 
         applicationRepository.save(application);
+
+        // Async dispatch
+        emailService.sendApplicationReceivedEmail(
+                candidate.getEmail(),
+                job.getTitle(),
+                job.getOrganization().getName()
+        );
     }
 
     private JobResponse mapToResponse(Job job) {

@@ -16,7 +16,7 @@ const STAGES: { value: Stage, label: string }[] = [
   { value: 'APPLIED', label: 'Applied' },
   { value: 'SCREENING', label: 'Screening' },
   { value: 'INTERVIEW', label: 'Interview' },
-  { value: 'OFFER', label: 'Offer' },
+  { value: 'HIRED', label: 'Hired' },
   { value: 'REJECTED', label: 'Rejected' }
 ];
 
