@@ -33,6 +33,11 @@ resend:
   api:
     key: ${RESEND_API_KEY:re_cwk6BuMZ_L4BR27Cyc1hmBMyLV1e3fwMH}
 
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:demo}
+  api-key: ${CLOUDINARY_API_KEY:key}
+  api-secret: ${CLOUDINARY_API_SECRET:secret}
+
 logging:
   level:
     org.flywaydb: DEBUG

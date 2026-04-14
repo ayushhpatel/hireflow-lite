@@ -15,4 +15,5 @@ public class ApplicationResponse {
     private String jobTitle;
     private ApplicationStage stage;
     private LocalDateTime appliedAt;
+    private String resumeUrl;
 }

@@ -32,6 +32,9 @@ public class Application {
     @Column(nullable = false)
     private ApplicationStage stage;
 
+    @Column(name = "resume_url")
+    private String resumeUrl;
+
     @CreationTimestamp
     @Column(name = "applied_at", updatable = false)
     private LocalDateTime appliedAt;

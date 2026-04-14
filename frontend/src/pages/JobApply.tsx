@@ -21,6 +21,7 @@ export function JobApplyPage() {
     phone: '',
     resumeUrl: ''
   });
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,12 +52,27 @@ export function JobApplyPage() {
     try {
       setIsSubmitting(true);
       setError('');
+      let finalResumeUrl = '';
+
+      if (resumeFile) {
+        const fileData = new FormData();
+        fileData.append('file', resumeFile);
+        const uploadRes = await api.post('/public/upload/resume', fileData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        finalResumeUrl = uploadRes.data.url;
+      }
+
       await api.post('/public/apply', {
         jobId,
-        ...formData
+        ...formData,
+        resumeUrl: finalResumeUrl
       });
       setIsSuccess(true);
       setFormData({ name: '', email: '', phone: '', resumeUrl: '' });
+      setResumeFile(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
@@ -69,6 +85,22 @@ export function JobApplyPage() {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.type !== 'application/pdf') {
+        setError('Only PDF files are allowed.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError('File size must be less than 5MB.');
+        return;
+      }
+      setResumeFile(file);
+      setError('');
+    }
   };
 
   if (isLoading) {
@@ -180,17 +212,18 @@ export function JobApplyPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="resumeUrl" className="text-sm font-medium text-slate-700">Resume Link (URL)</label>
+                    <label htmlFor="resumeFile" className="text-sm font-medium text-slate-700">Resume (PDF, max 5MB)</label>
                     <input
-                      type="url"
-                      id="resumeUrl"
-                      name="resumeUrl"
-                      value={formData.resumeUrl}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-shadow"
-                      placeholder="https://linkedin.com/in/..."
+                      type="file"
+                      id="resumeFile"
+                      name="resumeFile"
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-shadow file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                    <p className="text-xs text-slate-500 mt-1">Please provide a link to your LinkedIn, portfolio, or hosted resume.</p>
+                    {resumeFile && (
+                      <p className="text-xs text-green-600 mt-2 font-medium">Selected: {resumeFile.name}</p>
+                    )}
                   </div>
 
                   <div className="pt-4">
