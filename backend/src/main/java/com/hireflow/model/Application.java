@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -38,4 +40,7 @@ public class Application {
     @CreationTimestamp
     @Column(name = "applied_at", updatable = false)
     private LocalDateTime appliedAt;
+
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ApplicationAnswer> answers = new ArrayList<>();
 }

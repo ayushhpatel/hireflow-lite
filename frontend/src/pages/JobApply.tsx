@@ -23,6 +23,9 @@ export function JobApplyPage() {
   });
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   
+  const [questions, setQuestions] = useState<{id: string, questionText: string, type: 'TEXT' | 'YES_NO'}[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -32,8 +35,12 @@ export function JobApplyPage() {
     const fetchJob = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get(`/public/jobs/${jobId}`);
-        setJob(response.data);
+        const [jobRes, qRes] = await Promise.all([
+          api.get(`/public/jobs/${jobId}`),
+          api.get(`/public/jobs/${jobId}/questions`)
+        ]);
+        setJob(jobRes.data);
+        setQuestions(qRes.data);
       } catch (err) {
         setError('Job not found or is no longer open.');
       } finally {
@@ -65,14 +72,21 @@ export function JobApplyPage() {
         finalResumeUrl = uploadRes.data.url;
       }
 
+      const answersArray = Object.keys(answers).map(qId => ({
+        questionId: qId,
+        answerText: answers[qId]
+      }));
+
       await api.post('/public/apply', {
         jobId,
         ...formData,
-        resumeUrl: finalResumeUrl
+        resumeUrl: finalResumeUrl,
+        answers: answersArray
       });
       setIsSuccess(true);
       setFormData({ name: '', email: '', phone: '', resumeUrl: '' });
       setResumeFile(null);
+      setAnswers({});
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
@@ -225,6 +239,54 @@ export function JobApplyPage() {
                       <p className="text-xs text-green-600 mt-2 font-medium">Selected: {resumeFile.name}</p>
                     )}
                   </div>
+
+                  {questions.length > 0 && (
+                    <div className="pt-4 border-t border-slate-100 space-y-5">
+                      <h4 className="font-semibold text-slate-800">Job Specific Questions</h4>
+                      {questions.map((q) => (
+                        <div key={q.id} className="space-y-2">
+                          <label className="block text-sm font-medium text-slate-700">
+                            {q.questionText} *
+                          </label>
+                          {q.type === 'TEXT' ? (
+                            <textarea
+                              required
+                              value={answers[q.id] || ''}
+                              onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+                              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 min-h-[80px]"
+                            />
+                          ) : (
+                            <div className="flex items-center gap-4">
+                              <label className="flex items-center gap-2 text-sm text-slate-700">
+                                <input
+                                  type="radio"
+                                  name={`question_${q.id}`}
+                                  value="Yes"
+                                  required
+                                  checked={answers[q.id] === 'Yes'}
+                                  onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+                                  className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300"
+                                />
+                                Yes
+                              </label>
+                              <label className="flex items-center gap-2 text-sm text-slate-700">
+                                <input
+                                  type="radio"
+                                  name={`question_${q.id}`}
+                                  value="No"
+                                  required
+                                  checked={answers[q.id] === 'No'}
+                                  onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+                                  className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300"
+                                />
+                                No
+                              </label>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="pt-4">
                     <Button 

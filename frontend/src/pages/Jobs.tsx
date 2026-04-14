@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Plus, Trash2 } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -26,6 +26,7 @@ export function JobsPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newDepartment, setNewDepartment] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [questions, setQuestions] = useState<{questionText: string, type: 'TEXT' | 'YES_NO'}[]>([]);
   const [createError, setCreateError] = useState('');
 
   const fetchJobs = async () => {
@@ -58,16 +59,29 @@ export function JobsPage() {
 
     try {
       setIsCreating(true);
-      await api.post('/jobs', {
+      const createdJobRes = await api.post('/jobs', {
         title: newTitle,
         department: newDepartment || null,
         description: newDescription || null,
         status: 'OPEN'
       });
+      
+      const jobId = createdJobRes.data.id;
+      
+      if (questions.length > 0) {
+        // Post all questions dynamically
+        await Promise.all(
+          questions
+            .filter(q => q.questionText.trim().length > 0)
+            .map(q => api.post(`/jobs/${jobId}/questions`, q))
+        );
+      }
+
       // Reset form
       setNewTitle('');
       setNewDepartment('');
       setNewDescription('');
+      setQuestions([]);
       // Refresh list
       await fetchJobs();
     } catch (err: any) {
@@ -121,7 +135,51 @@ export function JobsPage() {
               className="w-full min-h-[100px] p-3 border border-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 resize-y"
             />
           </div>
-          <div className="flex justify-end">
+          
+          <div className="space-y-3 pt-2">
+            <h3 className="text-sm font-semibold text-slate-800">Custom Questions (Optional)</h3>
+            {questions.map((q, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <Input 
+                  value={q.questionText}
+                  onChange={(e) => {
+                    const newQ = [...questions];
+                    newQ[idx].questionText = e.target.value;
+                    setQuestions(newQ);
+                  }}
+                  placeholder="e.g. Why do you want this role?"
+                />
+                <select 
+                  value={q.type}
+                  onChange={(e) => {
+                    const newQ = [...questions];
+                    newQ[idx].type = e.target.value as 'TEXT' | 'YES_NO';
+                    setQuestions(newQ);
+                  }}
+                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white"
+                >
+                  <option value="TEXT">Text Answer</option>
+                  <option value="YES_NO">Yes / No</option>
+                </select>
+                <button 
+                  type="button"
+                  onClick={() => setQuestions(questions.filter((_, i) => i !== idx))}
+                  className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <button 
+               type="button" 
+               onClick={() => setQuestions([...questions, {questionText: '', type: 'TEXT'}])}
+               className="inline-flex items-center justify-center font-medium transition-colors bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 rounded-lg px-4 py-2 text-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Add Question
+            </button>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-slate-100">
             <Button type="submit" isLoading={isCreating} className="whitespace-nowrap px-8">
               Create Job
             </Button>

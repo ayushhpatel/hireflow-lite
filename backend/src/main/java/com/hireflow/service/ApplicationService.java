@@ -2,6 +2,7 @@ package com.hireflow.service;
 
 import com.hireflow.dto.ApplicationRequest;
 import com.hireflow.dto.ApplicationResponse;
+import com.hireflow.dto.ApplicationAnswerDto;
 import com.hireflow.model.Application;
 import com.hireflow.model.ApplicationStage;
 import com.hireflow.model.Candidate;
@@ -102,11 +103,19 @@ public class ApplicationService {
                 .id(app.getId())
                 .candidateId(app.getCandidate().getId())
                 .candidateName(app.getCandidate().getName())
+                .candidateEmail(app.getCandidate().getEmail())
                 .jobId(app.getJob().getId())
                 .jobTitle(app.getJob().getTitle())
                 .stage(app.getStage())
                 .appliedAt(app.getAppliedAt())
                 .resumeUrl(app.getResumeUrl())
+                .answers(app.getAnswers() != null ? app.getAnswers().stream()
+                        .map(ans -> ApplicationAnswerDto.builder()
+                                .questionId(ans.getQuestion().getId())
+                                .questionText(ans.getQuestion().getQuestionText())
+                                .answerText(ans.getAnswerText())
+                                .build())
+                        .collect(Collectors.toList()) : List.of())
                 .build();
     }
 }
