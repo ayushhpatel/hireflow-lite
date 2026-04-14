@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Mail, User } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Link } from 'react-router-dom';
 
 export type Stage = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'HIRED' | 'REJECTED';
 
 export interface Application {
   id: string;
+  candidateId: string;
   candidateName: string;
   candidateEmail: string;
   stage: Stage;
@@ -63,9 +65,15 @@ export function ApplicationCard({ application, onUpdateStage }: Props) {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            View Resume
+            Resume
           </a>
         )}
+        <Link
+          to={`/dashboard/candidates/${application.candidateId}`}
+          className={`inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer ${application.resumeUrl ? 'ml-2' : ''}`}
+        >
+          View Profile
+        </Link>
       </div>
 
       <div className="mt-1 flex items-center gap-2 pt-3 border-t border-slate-50">

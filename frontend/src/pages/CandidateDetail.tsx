@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
@@ -17,6 +17,7 @@ interface Application {
   jobTitle: string;
   stage: string;
   appliedAt: string;
+  answers?: { questionId: string; questionText: string; answerText: string }[];
 }
 
 interface Note {
@@ -183,17 +184,33 @@ export function CandidateDetail() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {applications.map((app) => (
-                  <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-6 text-sm font-medium text-slate-900">
-                      {app.jobTitle}
-                    </td>
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      {renderStageBadge(app.stage)}
-                    </td>
-                    <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">
-                      {new Date(app.appliedAt).toLocaleDateString()}
-                    </td>
-                  </tr>
+                  <Fragment key={app.id}>
+                    <tr className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-6 text-sm font-medium text-slate-900">
+                        {app.jobTitle}
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        {renderStageBadge(app.stage)}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">
+                        {new Date(app.appliedAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                    {app.answers && app.answers.length > 0 && (
+                      <tr className="bg-slate-50/30">
+                        <td colSpan={3} className="py-4 px-6 border-t border-slate-100">
+                          <div className="space-y-4 pl-4 border-l-2 border-slate-200 ml-2">
+                            {app.answers.map(ans => (
+                              <div key={ans.questionId}>
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">{ans.questionText}</h4>
+                                <p className="text-sm text-slate-600 mt-1 whitespace-pre-wrap">{ans.answerText}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

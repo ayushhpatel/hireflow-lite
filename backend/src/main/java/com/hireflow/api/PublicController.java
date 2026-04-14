@@ -1,6 +1,8 @@
 package com.hireflow.api;
 
 import com.hireflow.dto.JobResponse;
+import com.hireflow.dto.JobQuestionDto;
+import com.hireflow.dto.JobResponse;
 import com.hireflow.dto.PublicApplyRequest;
 import com.hireflow.service.PublicService;
 import jakarta.validation.Valid;
@@ -27,6 +29,11 @@ public class PublicController {
     @GetMapping("/jobs/{jobId}")
     public ResponseEntity<JobResponse> getJob(@PathVariable UUID jobId) {
         return ResponseEntity.ok(publicService.getJob(jobId));
+    }
+
+    @GetMapping("/jobs/{jobId}/questions")
+    public ResponseEntity<List<JobQuestionDto>> getJobQuestions(@PathVariable UUID jobId) {
+        return ResponseEntity.ok(publicService.getJobQuestions(jobId));
     }
 
     @PostMapping("/apply")

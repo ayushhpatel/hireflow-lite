@@ -1,6 +1,8 @@
 package com.hireflow.service;
 
 import com.hireflow.dto.JobResponse;
+import com.hireflow.dto.JobQuestionDto;
+import com.hireflow.dto.JobResponse;
 import com.hireflow.dto.PublicApplyRequest;
 import com.hireflow.model.Application;
 import com.hireflow.model.ApplicationStage;
@@ -10,6 +12,10 @@ import com.hireflow.model.JobStatus;
 import com.hireflow.repository.ApplicationRepository;
 import com.hireflow.repository.CandidateRepository;
 import com.hireflow.repository.JobRepository;
+import com.hireflow.repository.JobQuestionRepository;
+import com.hireflow.repository.ApplicationAnswerRepository;
+import com.hireflow.model.JobQuestion;
+import com.hireflow.model.ApplicationAnswer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +33,8 @@ public class PublicService {
     private final JobRepository jobRepository;
     private final CandidateRepository candidateRepository;
     private final ApplicationRepository applicationRepository;
+    private final JobQuestionRepository jobQuestionRepository;
+    private final ApplicationAnswerRepository applicationAnswerRepository;
     private final EmailService emailService;
 
     @Transactional(readOnly = true)
@@ -46,6 +54,24 @@ public class PublicService {
             throw new RuntimeException("Job is no longer open");
         }
         return mapToResponse(job);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JobQuestionDto> getJobQuestions(UUID jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+                
+        if (job.getStatus() != JobStatus.OPEN) {
+            throw new RuntimeException("Job is no longer open");
+        }
+        
+        return jobQuestionRepository.findByJobId(jobId).stream()
+                .map(q -> JobQuestionDto.builder()
+                        .id(q.getId())
+                        .questionText(q.getQuestionText())
+                        .type(q.getType())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -82,7 +108,21 @@ public class PublicService {
                 .resumeUrl(request.getResumeUrl())
                 .build();
 
-        applicationRepository.save(application);
+        application = applicationRepository.save(application);
+
+        if (request.getAnswers() != null && !request.getAnswers().isEmpty()) {
+            final Application savedApp = application;
+            List<ApplicationAnswer> answers = request.getAnswers().stream().map(ansReq -> {
+                JobQuestion question = jobQuestionRepository.findById(ansReq.getQuestionId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid question ID"));
+                return ApplicationAnswer.builder()
+                        .application(savedApp)
+                        .question(question)
+                        .answerText(ansReq.getAnswerText())
+                        .build();
+            }).collect(Collectors.toList());
+            applicationAnswerRepository.saveAll(answers);
+        }
 
         // Async dispatch
         emailService.sendApplicationReceivedEmail(

@@ -9,6 +9,7 @@ interface Candidate {
   id: string;
   name: string;
   email: string;
+  appliedRoles: string[];
   createdAt: string;
 }
 
@@ -87,6 +88,7 @@ export function CandidatesPage() {
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 font-semibold">
                   <th className="py-3 px-6">Name</th>
                   <th className="py-3 px-6">Email</th>
+                  <th className="py-3 px-6">Roles Applied For</th>
                   <th className="py-3 px-6">Created</th>
                 </tr>
               </thead>
@@ -104,6 +106,17 @@ export function CandidatesPage() {
                       </Link>
                     </td>
                     <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{candidate.email}</td>
+                    <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">
+                      {candidate.appliedRoles && candidate.appliedRoles.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {candidate.appliedRoles.map((r, i) => (
+                             <span key={i} className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded text-xs font-medium">{r}</span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">None</span>
+                      )}
+                    </td>
                     <td className="py-4 px-6 text-sm text-slate-500 whitespace-nowrap">{formatDate(candidate.createdAt)}</td>
                   </tr>
                 ))}

@@ -124,6 +124,7 @@ public class CandidateService {
                 .id(candidate.getId())
                 .name(candidate.getName())
                 .email(candidate.getEmail())
+                .appliedRoles(candidate.getApplications() != null ? candidate.getApplications().stream().map(a -> a.getJob().getTitle()).collect(Collectors.toList()) : List.of())
                 .createdAt(candidate.getCreatedAt())
                 .build();
     }
