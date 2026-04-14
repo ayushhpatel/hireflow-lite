@@ -106,6 +106,7 @@ public class ApplicationService {
                 .jobTitle(app.getJob().getTitle())
                 .stage(app.getStage())
                 .appliedAt(app.getAppliedAt())
+                .resumeUrl(app.getResumeUrl())
                 .build();
     }
 }

@@ -79,6 +79,7 @@ public class PublicService {
                 .job(job)
                 .candidate(candidate)
                 .stage(ApplicationStage.APPLIED)
+                .resumeUrl(request.getResumeUrl())
                 .build();
 
         applicationRepository.save(application);
