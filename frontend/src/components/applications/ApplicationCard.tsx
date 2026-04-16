@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Mail, User } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Link } from 'react-router-dom';
 
 export type Stage = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'HIRED' | 'REJECTED';
+
+export interface ApplicationAnswer {
+  questionId: string;
+  questionText: string;
+  answerText: string;
+}
 
 export interface Application {
   id: string;
@@ -12,27 +16,20 @@ export interface Application {
   candidateEmail: string;
   stage: Stage;
   resumeUrl?: string;
+  answers: ApplicationAnswer[];
+  appliedAt: string;
 }
 
 interface Props {
   application: Application;
   onUpdateStage: (id: string, newStage: Stage) => Promise<void>;
+  onClick: (application: Application) => void;
 }
 
-export function ApplicationCard({ application, onUpdateStage }: Props) {
+export function ApplicationCard({ application, onUpdateStage, onClick }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const getNextStage = (current: Stage): Stage | null => {
-    switch (current) {
-      case 'APPLIED': return 'SCREENING';
-      case 'SCREENING': return 'INTERVIEW';
-      case 'INTERVIEW': return 'HIRED';
-      default: return null;
-    }
-  };
-
   const currentStage = application.stage;
-  const nextStage = getNextStage(currentStage);
 
   const handleUpdate = async (stage: Stage) => {
     try {
@@ -44,7 +41,10 @@ export function ApplicationCard({ application, onUpdateStage }: Props) {
   };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow-md group flex flex-col gap-3">
+    <div 
+      onClick={() => onClick(application)}
+      className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow-md hover:border-slate-300 group flex flex-col gap-3 cursor-pointer"
+    >
       <div>
         <h4 className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
           <User className="w-4 h-4 text-slate-400" />
@@ -54,50 +54,25 @@ export function ApplicationCard({ application, onUpdateStage }: Props) {
           <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <span className="truncate">{application.candidateEmail}</span>
         </div>
-        
-        {application.resumeUrl && (
-          <a
-            href={application.resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg border border-blue-200 transition-all cursor-pointer"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            Resume
-          </a>
-        )}
-        <Link
-          to={`/dashboard/candidates/${application.candidateId}`}
-          className={`inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer ${application.resumeUrl ? 'ml-2' : ''}`}
-        >
-          View Profile
-        </Link>
       </div>
 
-      <div className="mt-1 flex items-center gap-2 pt-3 border-t border-slate-50">
-        {nextStage && (
-          <Button 
-            className="flex-1 text-xs py-1.5 px-3 h-auto" 
-            isLoading={isLoading} 
-            onClick={() => handleUpdate(nextStage)}
-          >
-            Advance
-          </Button>
-        )}
-        
-        {currentStage !== 'REJECTED' && currentStage !== 'HIRED' && (
-          <button 
-            disabled={isLoading}
-            onClick={() => handleUpdate('REJECTED')}
-            className={`text-xs font-medium px-3 py-1.5 rounded-lg border border-transparent transition-colors ${
-              isLoading ? 'opacity-50 cursor-not-allowed text-slate-400' : 'text-slate-500 hover:bg-red-50 hover:text-red-700 hover:border-red-200'
-            } ${!nextStage ? 'flex-1 border-slate-200 bg-white shadow-sm' : ''}`}
-          >
-            Reject
-          </button>
-        )}
+      <div className="mt-1 pt-3 border-t border-slate-50 relative" onClick={(e) => e.stopPropagation()}>
+        <label className="sr-only">Change Stage</label>
+        <select
+          value={currentStage}
+          onChange={(e) => handleUpdate(e.target.value as Stage)}
+          disabled={isLoading}
+          className="block w-full text-xs py-1.5 pl-3 pr-8 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors disabled:opacity-50 appearance-none font-medium text-slate-700"
+        >
+          <option value="APPLIED">Applied</option>
+          <option value="SCREENING">Screening</option>
+          <option value="INTERVIEW">Interview</option>
+          <option value="HIRED">Hired</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 pt-3 text-slate-500">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
       </div>
     </div>
   );
