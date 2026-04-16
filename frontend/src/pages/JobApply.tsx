@@ -139,8 +139,8 @@ export function JobApplyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto animate-in fade-in ease-out duration-300">
+    <div className="min-h-screen bg-slate-50 border-t-4 border-slate-900 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-3xl mx-auto animate-in fade-in ease-out duration-300">
         
         <Link to="/careers" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-700 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -164,144 +164,169 @@ export function JobApplyPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">{job?.title}</h1>
-              <p className="text-slate-500 font-medium">{job?.department || 'General'}</p>
-              
-              {job?.description && (
-                <div className="mt-6 text-slate-700 whitespace-pre-wrap leading-relaxed text-[15px]">
-                  {job.description}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="p-8 sm:p-10 border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                    {job?.department || 'General'}
+                  </span>
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Actively Hiring
+                  </span>
                 </div>
-              )}
+                <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">{job?.title}</h1>
+              </div>
               
-              <div className="mt-8 pt-8 border-t border-slate-100">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Submit your application</h3>
-                
-                {error && (
-                  <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100">
-                    {error}
+              <div className="p-8 sm:p-10">
+                {job?.description && (
+                  <div className="mb-12">
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">About the Role</h3>
+                    <div className="text-slate-600 whitespace-pre-wrap leading-relaxed text-base">
+                      {job.description}
+                    </div>
                   </div>
                 )}
                 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-1">
-                    <label htmlFor="name" className="text-sm font-medium text-slate-700">Full Name *</label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-shadow"
-                      placeholder="Jane Doe"
-                    />
-                  </div>
+                <div className="pt-10 border-t border-slate-100">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Submit your application</h3>
+                  <p className="text-slate-500 mb-8">Please fill out the form below carefully. All fields marked with an asterisk (*) are required.</p>
                   
-                  <div className="space-y-1">
-                    <label htmlFor="email" className="text-sm font-medium text-slate-700">Email Address *</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-shadow"
-                      placeholder="jane@example.com"
-                    />
-                  </div>
+                  {error && (
+                    <div className="mb-8 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 flex items-center shadow-sm">
+                      <span className="mr-2">⚠️</span> {error}
+                    </div>
+                  )}
+                
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1.5">
+                        <label htmlFor="name" className="text-sm font-bold text-slate-700">Full Name *</label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          required
+                          value={formData.name}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-medium text-slate-900"
+                          placeholder="Jane Doe"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <label htmlFor="email" className="text-sm font-bold text-slate-700">Email Address *</label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          required
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-medium text-slate-900"
+                          placeholder="jane@example.com"
+                        />
+                      </div>
+                    </div>
 
-                  <div className="space-y-1">
-                    <label htmlFor="phone" className="text-sm font-medium text-slate-700">Phone Number</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-shadow"
-                      placeholder="(555) 123-4567"
-                    />
-                  </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="phone" className="text-sm font-bold text-slate-700">Phone Number</label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-medium text-slate-900"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
 
-                  <div className="space-y-1">
-                    <label htmlFor="resumeFile" className="text-sm font-medium text-slate-700">Resume (PDF, max 5MB)</label>
-                    <input
-                      type="file"
-                      id="resumeFile"
-                      name="resumeFile"
-                      accept="application/pdf"
-                      onChange={handleFileChange}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 transition-shadow file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                    {resumeFile && (
-                      <p className="text-xs text-green-600 mt-2 font-medium">Selected: {resumeFile.name}</p>
-                    )}
+                    <div className="space-y-1.5">
+                      <label htmlFor="resumeFile" className="text-sm font-bold text-slate-700">Resume (PDF, max 5MB)</label>
+                      <input
+                        type="file"
+                        id="resumeFile"
+                        name="resumeFile"
+                        accept="application/pdf"
+                        onChange={handleFileChange}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 font-medium text-slate-600 cursor-pointer"
+                      />
+                      {resumeFile && (
+                        <p className="text-sm text-emerald-600 mt-2 font-bold inline-flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4" /> Selected: {resumeFile.name}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {questions.length > 0 && (
-                    <div className="pt-4 border-t border-slate-100 space-y-5">
-                      <h4 className="font-semibold text-slate-800">Job Specific Questions</h4>
-                      {questions.map((q) => (
-                        <div key={q.id} className="space-y-2">
-                          <label className="block text-sm font-medium text-slate-700">
-                            {q.questionText} *
-                          </label>
-                          {q.type === 'TEXT' ? (
-                            <textarea
-                              required
-                              value={answers[q.id] || ''}
-                              onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
-                              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 min-h-[80px]"
-                            />
-                          ) : (
-                            <div className="flex items-center gap-4">
-                              <label className="flex items-center gap-2 text-sm text-slate-700">
-                                <input
-                                  type="radio"
-                                  name={`question_${q.id}`}
-                                  value="Yes"
-                                  required
-                                  checked={answers[q.id] === 'Yes'}
-                                  onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
-                                  className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300"
-                                />
-                                Yes
-                              </label>
-                              <label className="flex items-center gap-2 text-sm text-slate-700">
-                                <input
-                                  type="radio"
-                                  name={`question_${q.id}`}
-                                  value="No"
-                                  required
-                                  checked={answers[q.id] === 'No'}
-                                  onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
-                                  className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300"
-                                />
-                                No
-                              </label>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                    <div className="pt-8 mt-8 border-t border-slate-100 space-y-6">
+                      <h4 className="font-bold text-slate-900 text-lg">Job Specific Questions</h4>
+                      <div className="space-y-8">
+                        {questions.map((q) => (
+                          <div key={q.id} className="space-y-3 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                            <label className="block text-sm font-bold text-slate-800 leading-relaxed">
+                              {q.questionText} <span className="text-red-500">*</span>
+                            </label>
+                            {q.type === 'TEXT' ? (
+                              <textarea
+                                required
+                                value={answers[q.id] || ''}
+                                onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 min-h-[120px] transition-all font-medium text-slate-800 resize-y"
+                                placeholder="Write your answer here..."
+                              />
+                            ) : (
+                              <div className="flex items-center gap-6 pt-2">
+                                <label className="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
+                                  <input
+                                    type="radio"
+                                    name={`question_${q.id}`}
+                                    value="Yes"
+                                    required
+                                    checked={answers[q.id] === 'Yes'}
+                                    onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+                                    className="w-4 h-4 text-slate-900 focus:ring-slate-900 border-slate-300 cursor-pointer"
+                                  />
+                                  <span className="text-sm font-bold text-slate-700">Yes</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
+                                  <input
+                                    type="radio"
+                                    name={`question_${q.id}`}
+                                    value="No"
+                                    required
+                                    checked={answers[q.id] === 'No'}
+                                    onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+                                    className="w-4 h-4 text-slate-900 focus:ring-slate-900 border-slate-300 cursor-pointer"
+                                  />
+                                  <span className="text-sm font-bold text-slate-700">No</span>
+                                </label>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
-                  <div className="pt-4">
+                  <div className="pt-8 mt-8 border-t border-slate-100">
                     <Button 
                       type="submit" 
-                      className="w-full justify-center text-base py-3" 
+                      className="w-full justify-center text-lg py-4 font-bold rounded-xl bg-slate-900 shadow-md hover:shadow-lg transition-all" 
                       isLoading={isSubmitting}
                       disabled={!formData.name || !formData.email || isSubmitting}
                     >
                       {isSubmitting ? 'Submitting Application...' : 'Submit Application'}
                     </Button>
+                    <p className="text-center text-xs text-slate-400 mt-4 font-medium">By submitting, you agree to HireFlow's data processing terms.</p>
                   </div>
                 </form>
               </div>
             </div>
           </div>
+        </div>
         )}
       </div>
     </div>

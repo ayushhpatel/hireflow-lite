@@ -7,6 +7,7 @@ interface Job {
   id: string;
   title: string;
   department: string;
+  description: string;
   createdAt: string;
 }
 
@@ -58,7 +59,7 @@ export function CareersPage() {
             </span>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="p-6 sm:p-8">
             {isLoading ? (
               <div className="py-12 flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
@@ -69,20 +70,42 @@ export function CareersPage() {
                 <p>No open positions right now. Check back later!</p>
               </div>
             ) : (
-              jobs.map((job) => (
-                <div key={job.id} className="p-6 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{job.title}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{job.department || 'General'}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {jobs.map((job) => (
+                  <div key={job.id} className="group relative bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 uppercase tracking-wider">
+                          {job.department || 'General'}
+                        </span>
+                        <span className="text-xs text-slate-400 font-medium">
+                          {new Date(job.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">{job.title}</h3>
+                      {job.description && (
+                        <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed mb-6">
+                          {job.description.replace(/[#*`_]/g, '') /* strip basic markdown for preview */}
+                        </p>
+                      )}
+                    </div>
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <Link
+                        to={`/careers/${job.id}`}
+                        className="inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700"
+                      >
+                        View Role &rarr;
+                      </Link>
+                      <Link
+                        to={`/careers/${job.id}`}
+                        className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-slate-900 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all shadow-sm group-hover:shadow"
+                      >
+                        Apply Now
+                      </Link>
+                    </div>
                   </div>
-                  <Link
-                    to={`/careers/${job.id}`}
-                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-colors shrink-0"
-                  >
-                    View Role & Apply
-                  </Link>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </div>

@@ -178,65 +178,87 @@ export function PipelineBoard() {
 
       {/* Drawer / Modal UI Overlay */}
       {selectedApplication && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm transition-opacity">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right-full duration-300">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h2 className="text-lg font-bold text-slate-900">Candidate Details</h2>
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-sm transition-opacity">
+          <div className="w-full max-w-5xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right-full duration-300">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shadow-sm z-10">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">{selectedApplication.candidateName}</h2>
+                <div className="flex items-center text-sm text-slate-500 mt-1 space-x-4 shrink-0">
+                  <span className="flex items-center">
+                    <Mail className="w-4 h-4 mr-1.5 text-slate-400" />
+                    {selectedApplication.candidateEmail}
+                  </span>
+                  <span className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-1.5 text-slate-400" />
+                    Applied {new Date(selectedApplication.appliedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
               <button 
                 onClick={() => setSelectedApplication(null)}
-                className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-200 rounded-full transition-colors"
+                className="p-2.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
+                title="Close Drawer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-              <div className="mb-8">
-                <h3 className="text-2xl font-extrabold text-slate-900">{selectedApplication.candidateName}</h3>
-                
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center text-sm text-slate-600">
-                    <Mail className="w-4 h-4 mr-3 text-slate-400" />
-                    <a href={`mailto:${selectedApplication.candidateEmail}`} className="text-blue-600 hover:underline">
-                      {selectedApplication.candidateEmail}
-                    </a>
-                  </div>
-                  <div className="flex items-center text-sm text-slate-600">
-                    <Calendar className="w-4 h-4 mr-3 text-slate-400" />
-                    <span>Applied on {new Date(selectedApplication.appliedAt).toLocaleDateString()}</span>
-                  </div>
-                  {selectedApplication.resumeUrl && (
-                    <div className="flex items-center text-sm text-slate-600">
-                      <FileText className="w-4 h-4 mr-3 text-slate-400" />
-                      <a 
-                        href={selectedApplication.resumeUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="font-medium text-blue-600 hover:underline decoration-blue-300 underline-offset-2"
-                      >
-                        View External Resume
-                      </a>
-                    </div>
-                  )}
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-slate-50">
+              
+              {/* Left Column: Answers */}
+              <div className="w-full md:w-[400px] flex-shrink-0 border-r border-slate-200 overflow-y-auto bg-white p-6 custom-scrollbar">
+                <div className="mb-6 flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Application Answers</h4>
                 </div>
-              </div>
-
-              {/* Answers Section */}
-              <div className="pt-6 border-t border-slate-100">
-                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Application Answers</h4>
                 {!selectedApplication.answers || selectedApplication.answers.length === 0 ? (
-                  <p className="text-sm text-slate-500 italic bg-slate-50 p-4 rounded-lg">No custom questions answered.</p>
+                  <div className="p-6 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p className="text-sm text-slate-500">No custom questions answered.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {selectedApplication.answers.map((ans) => (
-                      <div key={ans.questionId} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-xs font-semibold text-slate-500 mb-2">{ans.questionText}</p>
-                        <p className="text-sm text-slate-900 font-medium whitespace-pre-wrap">{ans.answerText}</p>
+                      <div key={ans.questionId}>
+                        <p className="text-xs font-semibold text-slate-500 mb-1.5">{ans.questionText}</p>
+                        <p className="text-sm text-slate-900 font-medium whitespace-pre-wrap bg-slate-50 p-4 rounded-xl border border-slate-100">{ans.answerText}</p>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+
+              {/* Right Column: Resume Preview */}
+              <div className="flex-1 flex flex-col overflow-hidden bg-slate-100 relative">
+                {selectedApplication.resumeUrl ? (
+                  <div className="w-full h-full flex flex-col">
+                    <div className="bg-white border-b border-slate-200 py-2.5 px-4 flex justify-end shadow-sm z-10">
+                       <a 
+                         href={selectedApplication.resumeUrl} 
+                         download
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         className="inline-flex items-center text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors px-4 py-2 rounded-lg shadow-sm"
+                       >
+                         <FileText className="w-3.5 h-3.5 mr-2" />
+                         Open in New Tab
+                       </a>
+                    </div>
+                    <div className="flex-1 p-4 overflow-hidden">
+                      <iframe 
+                        src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedApplication.resumeUrl)}&embedded=true`}
+                        className="w-full h-full rounded-xl shadow-sm border bg-white" 
+                        title="Resume Preview"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+                    <FileText className="w-16 h-16 mb-4 text-slate-300 opacity-50" />
+                    <p className="font-medium text-slate-600">No Resume Uploaded</p>
+                    <p className="text-sm mt-1">This candidate did not attach a resume file.</p>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
