@@ -23,39 +23,60 @@ public class EmailService {
         this.resend = new Resend(apiKey);
     }
 
+    private String buildHtmlTemplate(String companyName, String title, String content) {
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'></head>" +
+               "<body style='font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;background-color:#f8fafc;margin:0;padding:40px 20px;'>" +
+               "<div style='max-w-xl;margin:0 auto;background-color:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:600px;'>" +
+               "<div style='background-color:#0f172a;padding:32px 40px;text-align:center;'>" +
+               "<h1 style='color:#ffffff;font-size:24px;margin:0;letter-spacing:1px;'>" + companyName + "</h1>" +
+               "</div>" +
+               "<div style='padding:40px;'>" +
+               "<h2 style='color:#0f172a;font-size:20px;margin-top:0;margin-bottom:24px;'>" + title + "</h2>" +
+               "<div style='color:#475569;font-size:16px;line-height:26px;'>" + content + "</div>" +
+               "</div>" +
+               "<div style='background-color:#f1f5f9;padding:24px;text-align:center;border-top:1px solid #e2e8f0;'>" +
+               "<p style='color:#64748b;font-size:13px;margin:0;'>This email was sent automatically by the HireFlow ATS Platform.</p>" +
+               "</div>" +
+               "</div></body></html>";
+    }
+
     @Async
     public void sendApplicationReceivedEmail(String candidateEmail, String jobTitle, String companyName) {
         String subject = "Application Received - " + jobTitle;
-        String htmlBody = String.format(
-            "<p>Thank you for applying to <strong>%s</strong> for the <strong>%s</strong> role.</p>" +
-            "<p>We have successfully received your application and our team is currently reviewing your profile.</p>" +
-            "<p>Best regards,<br>The %s Hiring Team</p>",
-            companyName, jobTitle, companyName
-        );
-
+        String content = "<p>Thank you for applying for the <strong>" + jobTitle + "</strong> role.</p>" +
+                         "<p>We have successfully received your application portfolio. Our hiring team will carefully review your profile and we will be in touch with the next steps soon.</p>" +
+                         "<br><p>Best regards,<br><strong>The " + companyName + " Team</strong></p>";
+        
+        String htmlBody = buildHtmlTemplate(companyName, "Application Confirmation", content);
         sendEmail(candidateEmail, subject, htmlBody);
     }
 
     @Async
     public void sendStatusUpdateEmail(String candidateEmail, String jobTitle, String status, String companyName) {
         String subject = "Application Update - " + jobTitle;
-        String htmlBody;
+        String content;
+        String title;
 
         switch (status) {
             case "INTERVIEW":
-                htmlBody = String.format("<p>Hello,</p><p>Great news! You have been shortlisted for an interview for the <strong>%s</strong> role at <strong>%s</strong>.</p><p>We will be in touch shortly with scheduling details.</p>", jobTitle, companyName);
+                title = "Interview Invitation";
+                content = "<p>Great news!</p><p>We reviewed your application and would love to invite you for an interview for the <strong>" + jobTitle + "</strong> role.</p><p>A team member will reach out shortly with scheduling details and instructions.</p>";
                 break;
             case "HIRED":
-                htmlBody = String.format("<p>Hello,</p><p>Congratulations! We are thrilled to offer you the <strong>%s</strong> position at <strong>%s</strong>.</p><p>Welcome to the team!</p>", jobTitle, companyName);
+                title = "Welcome to the Team!";
+                content = "<p>Congratulations!</p><p>We are absolutely thrilled to offer you the <strong>" + jobTitle + "</strong> position at " + companyName + ".</p><p>We were incredibly impressed by your background and can't wait to have you onboard.</p>";
                 break;
             case "REJECTED":
-                htmlBody = String.format("<p>Hello,</p><p>Thank you for taking the time to apply for the <strong>%s</strong> role at <strong>%s</strong>.</p><p>We appreciate your interest, but we have decided to move forward with other candidates at this time.</p><p>We wish you the best of luck in your job search.</p>", jobTitle, companyName);
+                title = "Update on your application";
+                content = "<p>Thank you for taking the time to apply for the <strong>" + jobTitle + "</strong> role.</p><p>While your background is impressive, we have decided to move forward with other candidates whose profiles more closely align with our current needs.</p><p>We wish you the very best in your search and future endeavors.</p>";
                 break;
             default:
-                // For other status states like SCREENING/OFFER, omit or map custom paths.
                 log.info("No email template defined for status mutation: {}", status);
                 return;
         }
+
+        content += "<br><p>Best regards,<br><strong>The " + companyName + " Team</strong></p>";
+        String htmlBody = buildHtmlTemplate(companyName, title, content);
 
         sendEmail(candidateEmail, subject, htmlBody);
     }
