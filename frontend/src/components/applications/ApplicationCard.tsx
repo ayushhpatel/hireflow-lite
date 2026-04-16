@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Mail, User } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Link } from 'react-router-dom';
 
 export type Stage = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'HIRED' | 'REJECTED';
 
