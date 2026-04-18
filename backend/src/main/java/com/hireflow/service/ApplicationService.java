@@ -116,6 +116,9 @@ public class ApplicationService {
                                 .answerText(ans.getAnswerText())
                                 .build())
                         .collect(Collectors.toList()) : List.of())
+                .matchScore(app.getMatchScore())
+                .strengths(app.getStrengths())
+                .gaps(app.getGaps())
                 .build();
     }
 }

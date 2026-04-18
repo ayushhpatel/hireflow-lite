@@ -205,8 +205,63 @@ export function PipelineBoard() {
             
             <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-slate-50">
               
-              {/* Left Column: Answers */}
+              {/* Left Column: AI Match + Answers */}
               <div className="w-full md:w-[400px] flex-shrink-0 border-r border-slate-200 overflow-y-auto bg-white p-6 custom-scrollbar">
+                
+                {/* AI Insights Module */}
+                {(selectedApplication.matchScore !== null && selectedApplication.matchScore !== undefined) && (
+                  <div className="mb-8 bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center">
+                        <span className="mr-2">✨</span> AI Match Insights
+                      </h4>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-bold tracking-wide ${
+                         selectedApplication.matchScore >= 80 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                         selectedApplication.matchScore >= 60 ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                         'bg-rose-100 text-rose-700 border border-rose-200'
+                      }`}>
+                        Score: {selectedApplication.matchScore}%
+                      </span>
+                    </div>
+
+                    {selectedApplication.strengths && (() => {
+                      try {
+                        const strengths = JSON.parse(selectedApplication.strengths);
+                        if (strengths.length > 0) return (
+                          <div className="mb-4">
+                            <h5 className="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Strengths</h5>
+                            <ul className="space-y-1.5">
+                              {strengths.map((s: string, i: number) => (
+                                <li key={`strength-${i}`} className="text-sm text-slate-600 flex items-start">
+                                  <span className="mr-2 text-emerald-500 font-bold shrink-0">✓</span> <span>{s}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      } catch (e) { return null; }
+                    })()}
+
+                    {selectedApplication.gaps && (() => {
+                      try {
+                        const gaps = JSON.parse(selectedApplication.gaps);
+                        if (gaps.length > 0) return (
+                          <div>
+                            <h5 className="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Identified Gaps</h5>
+                            <ul className="space-y-1.5">
+                              {gaps.map((g: string, i: number) => (
+                                <li key={`gap-${i}`} className="text-sm text-slate-600 flex items-start">
+                                  <span className="mr-2 text-rose-500 font-bold shrink-0">✗</span> <span>{g}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      } catch (e) { return null; }
+                    })()}
+                  </div>
+                )}
+
                 <div className="mb-6 flex items-center justify-between">
                   <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Application Answers</h4>
                 </div>

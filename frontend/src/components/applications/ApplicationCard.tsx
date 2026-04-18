@@ -18,6 +18,9 @@ export interface Application {
   resumeUrl?: string;
   answers: ApplicationAnswer[];
   appliedAt: string;
+  matchScore: number | null;
+  strengths: string | null;
+  gaps: string | null;
 }
 
 interface Props {
@@ -56,7 +59,19 @@ export function ApplicationCard({ application, onUpdateStage, onClick }: Props) 
         </div>
       </div>
 
-      <div className="mt-1 pt-3 border-t border-slate-50 relative" onClick={(e) => e.stopPropagation()}>
+      {application.matchScore !== null && application.matchScore !== undefined && (
+        <div className="mt-1 flex justify-end">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${
+             application.matchScore >= 80 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+             application.matchScore >= 60 ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+             'bg-rose-100 text-rose-700 border border-rose-200'
+          }`}>
+            🎯 {application.matchScore}% Match
+          </span>
+        </div>
+      )}
+
+      <div className="pt-3 border-t border-slate-50 relative" onClick={(e) => e.stopPropagation()}>
         <label className="sr-only">Change Stage</label>
         <select
           value={currentStage}

@@ -36,6 +36,7 @@ public class PublicService {
     private final JobQuestionRepository jobQuestionRepository;
     private final ApplicationAnswerRepository applicationAnswerRepository;
     private final EmailService emailService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<JobResponse> getOpenJobs() {
@@ -124,13 +125,18 @@ public class PublicService {
             applicationAnswerRepository.saveAll(answers);
         }
 
-        // Async dispatch
+        // Async dispatch for confirmation Email
         emailService.sendApplicationReceivedEmail(
                 candidate.getEmail(),
                 job.getTitle(),
                 job.getOrganization().getName()
         );
+
+        // Dispatch an event to process AI Matching strictly after the DB transaction commits
+        eventPublisher.publishEvent(new ApplicationCreatedEvent(application.getId()));
     }
+
+    public record ApplicationCreatedEvent(UUID applicationId) {}
 
     private JobResponse mapToResponse(Job job) {
         return JobResponse.builder()
