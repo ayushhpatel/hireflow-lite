@@ -19,4 +19,7 @@ public class ApplicationResponse {
     private LocalDateTime appliedAt;
     private String resumeUrl;
     private List<ApplicationAnswerDto> answers;
+    private Integer matchScore;
+    private String strengths;
+    private String gaps;
 }

@@ -43,4 +43,13 @@ public class Application {
 
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApplicationAnswer> answers = new ArrayList<>();
+
+    @Column(name = "match_score")
+    private Integer matchScore;
+
+    @Column(columnDefinition = "TEXT")
+    private String strengths;
+
+    @Column(columnDefinition = "TEXT")
+    private String gaps;
 }
