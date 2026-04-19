@@ -17,4 +17,7 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
 
     @Query("SELECT a FROM Application a JOIN FETCH a.job WHERE a.id = :id")
     Optional<Application> findByIdWithJob(@Param("id") UUID id);
+
+    @Query("SELECT a FROM Application a WHERE a.job.id = :jobId AND a.organization.id = :orgId ORDER BY a.matchScore DESC NULLS LAST")
+    List<Application> findByJobIdAndOrganizationIdOrderByMatchScoreDescNullsLast(@Param("jobId") UUID jobId, @Param("orgId") UUID orgId);
 }

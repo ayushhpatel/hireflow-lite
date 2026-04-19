@@ -43,6 +43,41 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
+    public List<ApplicationResponse> getRankedApplicationsForJob(UUID jobId, UUID orgId) {
+        jobRepository.findByIdAndOrganizationId(jobId, orgId)
+                .orElseThrow(() -> new RuntimeException("Job not found or access denied"));
+
+        List<Application> applications = applicationRepository.findByJobIdAndOrganizationIdOrderByMatchScoreDescNullsLast(jobId, orgId);
+        
+        List<ApplicationResponse> responses = new java.util.ArrayList<>();
+        int topCandidateCount = 0;
+        
+        for (Application app : applications) {
+            boolean isTop = false;
+            if (app.getMatchScore() != null && topCandidateCount < 3) {
+                isTop = true;
+                topCandidateCount++;
+            }
+            
+            ApplicationResponse response = mapToResponse(app);
+            response.setMatchScore(app.getMatchScore());
+            response.setIsTopCandidate(isTop);
+            
+            // Map Phase 1 fields dynamically if they exist!
+            try {
+                // To avoid mapping errors here or changing method sig, I'll set properties dynamically if available in object footprint.
+                // Assuming strengths/gaps are available
+                response.setStrengths(app.getStrengths());
+                response.setGaps(app.getGaps());
+            } catch (Exception e) {
+                // Ignore if missing in model
+            }
+            responses.add(response);
+        }
+        return responses;
+    }
+
+    @Transactional(readOnly = true)
     public List<ApplicationResponse> getApplicationsForCandidate(UUID candidateId, UUID orgId) {
         candidateRepository.findByIdAndOrganizationId(candidateId, orgId)
                 .orElseThrow(() -> new RuntimeException("Candidate not found or access denied"));
@@ -117,6 +152,7 @@ public class ApplicationService {
                                 .build())
                         .collect(Collectors.toList()) : List.of())
                 .matchScore(app.getMatchScore())
+                .isTopCandidate(false)
                 .strengths(app.getStrengths())
                 .gaps(app.getGaps())
                 .build();

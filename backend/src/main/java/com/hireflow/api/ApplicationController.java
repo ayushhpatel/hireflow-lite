@@ -29,6 +29,13 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.getApplicationsForJob(jobId, userDetails.getOrgId()));
     }
 
+    @GetMapping("/job/{jobId}/ranked-applications")
+    public ResponseEntity<List<ApplicationResponse>> getRankedApplicationsForJob(
+            @PathVariable UUID jobId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(applicationService.getRankedApplicationsForJob(jobId, userDetails.getOrgId()));
+    }
+
     @PostMapping
     public ResponseEntity<ApplicationResponse> createApplication(
             @Valid @RequestBody ApplicationRequest request,

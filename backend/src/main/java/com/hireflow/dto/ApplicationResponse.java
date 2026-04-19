@@ -18,8 +18,9 @@ public class ApplicationResponse {
     private ApplicationStage stage;
     private LocalDateTime appliedAt;
     private String resumeUrl;
-    private List<ApplicationAnswerDto> answers;
     private Integer matchScore;
+    private Boolean isTopCandidate;
+    private List<ApplicationAnswerDto> answers;
     private String strengths;
     private String gaps;
 }
