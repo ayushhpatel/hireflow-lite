@@ -22,4 +22,17 @@ public class ApplicationResponse {
     private Integer matchScore;
     private String strengths;
     private String gaps;
+    private String skills;
+    private Boolean isTopCandidate;
+    private Boolean hasContradictions;
+
+    private List<RecommendationDTO> crossJobRecommendations;
+
+    @Data
+    @Builder
+    public static class RecommendationDTO {
+        private String jobTitle;
+        private Integer matchScore;
+        private String reasoning;
+    }
 }

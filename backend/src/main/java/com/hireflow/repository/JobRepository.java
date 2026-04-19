@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface JobRepository extends JpaRepository<Job, UUID> {
     List<Job> findByOrganizationId(UUID organizationId);
+    List<Job> findByOrganizationIdAndIdNot(UUID organizationId, UUID excludedId);
     Page<Job> findByOrganizationId(UUID organizationId, Pageable pageable);
     Page<Job> findByOrganizationIdAndTitleContainingIgnoreCase(UUID organizationId, String title, Pageable pageable);
     Optional<Job> findByIdAndOrganizationId(UUID id, UUID organizationId);

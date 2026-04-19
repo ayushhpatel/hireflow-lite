@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, User } from 'lucide-react';
+import { Mail, User, Flag } from 'lucide-react';
 
 export type Stage = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'HIRED' | 'REJECTED';
 
@@ -7,6 +7,14 @@ export interface ApplicationAnswer {
   questionId: string;
   questionText: string;
   answerText: string;
+  isContradictory?: boolean;
+  preferredAnswer?: string;
+}
+
+export interface ApplicationRecommendation {
+  jobTitle: string;
+  matchScore: number;
+  reasoning: string;
 }
 
 export interface Application {
@@ -21,6 +29,10 @@ export interface Application {
   matchScore: number | null;
   strengths: string | null;
   gaps: string | null;
+  skills: string | null;
+  isTopCandidate?: boolean;
+  hasContradictions?: boolean;
+  crossJobRecommendations?: ApplicationRecommendation[];
 }
 
 interface Props {
@@ -59,8 +71,13 @@ export function ApplicationCard({ application, onUpdateStage, onClick }: Props) 
         </div>
       </div>
 
-      {application.matchScore !== null && application.matchScore !== undefined && (
-        <div className="mt-1 flex justify-end">
+      <div className="mt-1 flex justify-end gap-2 items-center">
+        {application.hasContradictions && (
+           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold tracking-wide bg-red-100 text-red-700 border border-red-200" title="Contradictory Answer to Dealbreaker Question!">
+             <Flag className="w-3 h-3 mr-1 fill-current" /> Flagged
+           </span>
+        )}
+        {application.matchScore !== null && application.matchScore !== undefined && (
           <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${
              application.matchScore >= 80 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
              application.matchScore >= 60 ? 'bg-amber-100 text-amber-700 border border-amber-200' :
@@ -68,8 +85,8 @@ export function ApplicationCard({ application, onUpdateStage, onClick }: Props) 
           }`}>
             🎯 {application.matchScore}% Match
           </span>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="pt-3 border-t border-slate-50 relative" onClick={(e) => e.stopPropagation()}>
         <label className="sr-only">Change Stage</label>

@@ -12,4 +12,6 @@ public class JobQuestionDto {
     private UUID id;
     private String questionText;
     private QuestionType type;
+    private Boolean isDealbreaker;
+    private String preferredAnswer;
 }

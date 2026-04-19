@@ -36,6 +36,9 @@ public class Application {
 
     @Column(name = "resume_url")
     private String resumeUrl;
+    
+    @Column(name = "skills")
+    private String skills;
 
     @CreationTimestamp
     @Column(name = "applied_at", updatable = false)

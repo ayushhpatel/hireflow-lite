@@ -11,4 +11,6 @@ public class ApplicationAnswerDto {
     private UUID questionId;
     private String questionText;
     private String answerText;
+    private Boolean isContradictory;
+    private String preferredAnswer;
 }
