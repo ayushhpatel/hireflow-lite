@@ -8,10 +8,12 @@ import com.hireflow.model.ApplicationStage;
 import com.hireflow.model.Candidate;
 import com.hireflow.model.Job;
 import com.hireflow.model.Organization;
+import com.hireflow.model.CandidateRecommendation;
 import com.hireflow.repository.ApplicationRepository;
 import com.hireflow.repository.CandidateRepository;
 import com.hireflow.repository.JobRepository;
 import com.hireflow.repository.OrganizationRepository;
+import com.hireflow.repository.CandidateRecommendationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class ApplicationService {
     private final CandidateRepository candidateRepository;
     private final JobRepository jobRepository;
     private final OrganizationRepository organizationRepository;
+    private final CandidateRecommendationRepository candidateRecommendationRepository;
     private final EmailService emailService;
 
     @Transactional(readOnly = true)
@@ -36,10 +39,65 @@ public class ApplicationService {
         jobRepository.findByIdAndOrganizationId(jobId, orgId)
                 .orElseThrow(() -> new RuntimeException("Job not found or access denied"));
 
-        return applicationRepository.findByJobIdAndOrganizationId(jobId, orgId)
-                .stream()
-                .map(this::mapToResponse)
+        List<Application> apps = applicationRepository.findByJobIdAndOrganizationId(jobId, orgId);
+
+        apps.sort((a, b) -> {
+            int scoreA = a.getMatchScore() == null ? -1 : a.getMatchScore();
+            int scoreB = b.getMatchScore() == null ? -1 : b.getMatchScore();
+            return Integer.compare(scoreB, scoreA);
+        });
+
+        List<ApplicationResponse> responses = new java.util.ArrayList<>();
+        for (int i = 0; i < apps.size(); i++) {
+            Application app = apps.get(i);
+            boolean isTop = i < 3 && app.getMatchScore() != null && app.getMatchScore() >= 60;
+            responses.add(mapToResponse(app, isTop));
+        }
+
+        return responses;
+    }
+
+    @Transactional(readOnly = true)
+    public com.hireflow.dto.InsightsResponse getJobInsights(UUID jobId, UUID orgId) {
+        jobRepository.findByIdAndOrganizationId(jobId, orgId)
+                .orElseThrow(() -> new RuntimeException("Job not found or access denied"));
+
+        List<Application> apps = applicationRepository.findByJobIdAndOrganizationId(jobId, orgId);
+
+        java.util.Map<String, Integer> skillCounts = new java.util.HashMap<>();
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        for (Application app : apps) {
+            if (app.getSkills() != null && !app.getSkills().isEmpty()) {
+                try {
+                    List<String> skills = mapper.readValue(app.getSkills(), new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+                    for (String skill : skills) {
+                        skillCounts.put(skill, skillCounts.getOrDefault(skill, 0) + 1);
+                    }
+                } catch (Exception e) {
+                    // Ignore parse errors
+                }
+            }
+        }
+
+        List<com.hireflow.dto.InsightsResponse.SkillCount> allSkills = skillCounts.entrySet().stream()
+                .map(e -> com.hireflow.dto.InsightsResponse.SkillCount.builder().skill(e.getKey()).count(e.getValue()).build())
                 .collect(Collectors.toList());
+
+        List<com.hireflow.dto.InsightsResponse.SkillCount> topSkills = allSkills.stream()
+                .sorted((a, b) -> Integer.compare(b.getCount(), a.getCount()))
+                .limit(7)
+                .collect(Collectors.toList());
+
+        List<com.hireflow.dto.InsightsResponse.SkillCount> rareSkills = allSkills.stream()
+                .sorted((a, b) -> Integer.compare(a.getCount(), b.getCount()))
+                .limit(5)
+                .collect(Collectors.toList());
+
+        return com.hireflow.dto.InsightsResponse.builder()
+                .topSkills(topSkills)
+                .rareSkills(rareSkills)
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -49,7 +107,7 @@ public class ApplicationService {
         
         return applicationRepository.findByCandidateIdAndOrganizationIdOrderByAppliedAtDesc(candidateId, orgId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(app -> mapToResponse(app, false))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +134,7 @@ public class ApplicationService {
                 .build();
 
         Application saved = applicationRepository.save(application);
-        return mapToResponse(saved);
+        return mapToResponse(saved, false);
     }
 
     @Transactional
@@ -95,10 +153,20 @@ public class ApplicationService {
                 application.getOrganization().getName()
         );
 
-        return mapToResponse(saved);
+        return mapToResponse(saved, false);
     }
 
-    private ApplicationResponse mapToResponse(Application app) {
+    private ApplicationResponse mapToResponse(Application app, boolean isTop) {
+        List<CandidateRecommendation> recs = candidateRecommendationRepository.findByCandidateIdOrderByMatchScoreDesc(app.getCandidate().getId());
+        
+        List<ApplicationResponse.RecommendationDTO> parsedRecs = recs.stream()
+            .map(r -> ApplicationResponse.RecommendationDTO.builder()
+                .jobTitle(r.getRecommendedJob().getTitle())
+                .matchScore(r.getMatchScore())
+                .reasoning(r.getReasoning())
+                .build())
+            .collect(Collectors.toList());
+
         return ApplicationResponse.builder()
                 .id(app.getId())
                 .candidateId(app.getCandidate().getId())
@@ -110,15 +178,41 @@ public class ApplicationService {
                 .appliedAt(app.getAppliedAt())
                 .resumeUrl(app.getResumeUrl())
                 .answers(app.getAnswers() != null ? app.getAnswers().stream()
-                        .map(ans -> ApplicationAnswerDto.builder()
+                        .map(ans -> {
+                            boolean contradictory = false;
+                            String preferred = null;
+                            if (ans.getQuestion().getType() == com.hireflow.model.QuestionType.YES_NO && 
+                                Boolean.TRUE.equals(ans.getQuestion().getIsDealbreaker())) {
+                                preferred = ans.getQuestion().getPreferredAnswer();
+                                if (preferred != null && ans.getAnswerText() != null) {
+                                    contradictory = !preferred.equalsIgnoreCase(ans.getAnswerText().trim());
+                                }
+                            }
+                            return ApplicationAnswerDto.builder()
                                 .questionId(ans.getQuestion().getId())
                                 .questionText(ans.getQuestion().getQuestionText())
                                 .answerText(ans.getAnswerText())
-                                .build())
+                                .isContradictory(contradictory)
+                                .preferredAnswer(preferred)
+                                .build();
+                        })
                         .collect(Collectors.toList()) : List.of())
                 .matchScore(app.getMatchScore())
                 .strengths(app.getStrengths())
                 .gaps(app.getGaps())
+                .skills(app.getSkills())
+                .isTopCandidate(isTop)
+                .hasContradictions(app.getAnswers() != null && app.getAnswers().stream()
+                        .anyMatch(ans -> {
+                            if (ans.getQuestion().getType() == com.hireflow.model.QuestionType.YES_NO && 
+                                Boolean.TRUE.equals(ans.getQuestion().getIsDealbreaker())) {
+                                String preferred = ans.getQuestion().getPreferredAnswer();
+                                return preferred != null && ans.getAnswerText() != null && 
+                                       !preferred.equalsIgnoreCase(ans.getAnswerText().trim());
+                            }
+                            return false;
+                        }))
+                .crossJobRecommendations(parsedRecs)
                 .build();
     }
 }

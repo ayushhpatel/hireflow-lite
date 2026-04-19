@@ -12,4 +12,7 @@ public class JobQuestionCreateRequest {
     
     @NotNull
     private QuestionType type;
+
+    private Boolean isDealbreaker;
+    private String preferredAnswer;
 }

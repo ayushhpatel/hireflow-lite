@@ -42,6 +42,8 @@ public class JobQuestionController {
                 .job(job)
                 .questionText(request.getQuestionText())
                 .type(request.getType())
+                .isDealbreaker(request.getIsDealbreaker() != null ? request.getIsDealbreaker() : false)
+                .preferredAnswer(request.getPreferredAnswer())
                 .build();
 
         JobQuestion saved = jobQuestionRepository.save(question);
@@ -70,6 +72,8 @@ public class JobQuestionController {
                 .id(question.getId())
                 .questionText(question.getQuestionText())
                 .type(question.getType())
+                .isDealbreaker(question.getIsDealbreaker())
+                .preferredAnswer(question.getPreferredAnswer())
                 .build();
     }
 }

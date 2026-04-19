@@ -21,15 +21,23 @@ const STAGES: { value: Stage | 'ALL', label: string }[] = [
   { value: 'REJECTED', label: 'Rejected' }
 ];
 
+interface SkillCount { skill: string; count: number; }
+interface Insights {
+  topSkills: SkillCount[];
+  rareSkills: SkillCount[];
+}
+
 export function PipelineBoard() {
   const { jobId } = useParams<{ jobId: string }>();
   const [job, setJob] = useState<Job | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [insights, setInsights] = useState<Insights | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
   const [selectedStage, setSelectedStage] = useState<Stage | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState<'matchScore' | 'newest'>('matchScore');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   const fetchData = async () => {
@@ -38,13 +46,15 @@ export function PipelineBoard() {
       setIsLoading(true);
       setError('');
       
-      const [jobRes, appsRes] = await Promise.all([
+      const [jobRes, appsRes, insightsRes] = await Promise.all([
         api.get(`/jobs/${jobId}`),
-        api.get(`/applications/job/${jobId}`)
+        api.get(`/applications/job/${jobId}`),
+        api.get(`/applications/job/${jobId}/insights`).catch(() => ({ data: null }))
       ]);
       
       setJob(jobRes.data);
       setApplications(appsRes.data);
+      if (insightsRes.data) setInsights(insightsRes.data);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load pipeline data');
     } finally {
@@ -89,11 +99,21 @@ export function PipelineBoard() {
   }
 
   // Filter Applications
-  const filteredApps = applications.filter(app => {
+  let filteredApps = applications.filter(app => {
     const matchesStage = selectedStage === 'ALL' || app.stage === selectedStage;
     const matchesEmail = app.candidateEmail.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStage && matchesEmail;
   });
+
+  // Sort Applications
+  if (sortMode === 'newest') {
+    filteredApps = [...filteredApps].sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime());
+  } else if (sortMode === 'matchScore') {
+    filteredApps = [...filteredApps].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+  }
+
+  const topCandidates = filteredApps.filter(app => app.isTopCandidate);
+  const otherCandidates = filteredApps.filter(app => !app.isTopCandidate);
 
   return (
     <div className="flex flex-col animate-in fade-in ease-out duration-300">
@@ -138,17 +158,28 @@ export function PipelineBoard() {
           ))}
         </div>
 
-        <div className="relative w-full md:w-80 shrink-0">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-slate-400" />
+        <div className="flex w-full md:w-auto gap-3 shrink-0">
+          <select 
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as 'matchScore' | 'newest')}
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm font-medium bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          >
+            <option value="matchScore">Top Matches First</option>
+            <option value="newest">Newest First</option>
+          </select>
+
+          <div className="relative w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400"
+              placeholder="Search candidate email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400"
-            placeholder="Search candidate email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </div>
       </div>
 
@@ -164,15 +195,86 @@ export function PipelineBoard() {
            </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-12">
-          {filteredApps.map((app) => (
-            <ApplicationCard
-              key={app.id}
-              application={app}
-              onUpdateStage={handleUpdateStage}
-              onClick={setSelectedApplication}
-            />
-          ))}
+        <div className="pb-12 space-y-8">
+          
+          {/* Candidate Insights Analytics Panel */}
+          {insights && (insights.topSkills?.length > 0 || insights.rareSkills?.length > 0) && (
+             <div className="bg-white border flex flex-col md:flex-row border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                <div className="p-6 md:w-2/3 border-b md:border-b-0 md:border-r border-slate-100">
+                   <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider mb-5 flex items-center">
+                     📊 Skill Distribution Density
+                   </h3>
+                   <div className="space-y-4">
+                     {insights.topSkills.map((sk) => {
+                        const maxCount = Math.max(...insights.topSkills.map(s => s.count), 1);
+                        const width = Math.max((sk.count / maxCount) * 100, 2);
+                        return (
+                          <div key={sk.skill} className="flex items-center text-sm group">
+                            <span className="w-40 truncate font-semibold text-slate-700">{sk.skill}</span>
+                            <div className="flex-1 mx-4 bg-slate-100 rounded-lg h-3 overflow-hidden flex items-center shadow-inner">
+                               <div className="bg-blue-500 h-full transition-all duration-1000 ease-out group-hover:bg-blue-400" style={{ width: `${width}%` }} />
+                            </div>
+                            <span className="font-extrabold text-slate-400 text-xs w-6 text-right tabular-nums">{sk.count}</span>
+                          </div>
+                        )
+                     })}
+                   </div>
+                </div>
+                <div className="p-6 md:w-1/3 bg-slate-50">
+                   <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider mb-5 flex items-center">
+                     💎 Rare / Unique Traits
+                   </h3>
+                   <ul className="space-y-3">
+                     {insights.rareSkills.map(sk => (
+                        <li key={sk.skill} className="flex justify-between items-center bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:shadow transition-all hover:-translate-y-0.5">
+                           <span className="font-bold text-slate-700 text-sm truncate pr-2">{sk.skill}</span>
+                           <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0 text-xs font-bold px-2.5 py-1 rounded-md">{sk.count} applicant{sk.count !== 1 && 's'}</span>
+                        </li>
+                     ))}
+                   </ul>
+                </div>
+             </div>
+          )}
+
+          {/* Top Candidates Section */}
+          {(topCandidates.length > 0 && sortMode === 'matchScore') && (
+            <section className="bg-amber-50/50 border border-amber-100 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-extrabold text-amber-800 uppercase tracking-wider mb-4 flex items-center">
+                <span className="mr-2 text-amber-500 text-lg">⭐</span> Top Candidates
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {topCandidates.map((app, index) => (
+                  <div key={app.id} className="relative">
+                    <div className="absolute -top-3 -left-3 z-10 bg-amber-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow-sm">
+                      #{index + 1}
+                    </div>
+                    <ApplicationCard
+                      application={app}
+                      onUpdateStage={handleUpdateStage}
+                      onClick={setSelectedApplication}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Other Candidates Section */}
+          <section>
+            {(topCandidates.length > 0 && sortMode === 'matchScore') && (
+               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 ml-1">Other Applications</h3>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(sortMode === 'matchScore' ? otherCandidates : filteredApps).map((app) => (
+                <ApplicationCard
+                  key={app.id}
+                  application={app}
+                  onUpdateStage={handleUpdateStage}
+                  onClick={setSelectedApplication}
+                />
+              ))}
+            </div>
+          </section>
         </div>
       )}
 
@@ -207,6 +309,33 @@ export function PipelineBoard() {
               
               {/* Left Column: AI Match + Answers */}
               <div className="w-full md:w-[400px] flex-shrink-0 border-r border-slate-200 overflow-y-auto bg-white p-6 custom-scrollbar">
+
+                {/* Contradictory Answers / Red Flags */}
+                {selectedApplication.answers && selectedApplication.answers.some(a => a.isContradictory) && (
+                  <div className="mb-8 border border-red-200 bg-red-50 rounded-xl p-5 shadow-sm">
+                    <h4 className="text-sm font-bold text-red-900 uppercase tracking-wider flex items-center mb-4">
+                      <span className="mr-2">🚩</span> System Red Flags
+                    </h4>
+                    <p className="text-xs text-red-700 font-medium mb-4">This candidate submitted answers directly contradicting required dealbreakers for this role.</p>
+                    <div className="space-y-4">
+                      {selectedApplication.answers.filter(a => a.isContradictory).map(ans => (
+                        <div key={ans.questionId} className="bg-white border border-red-100 rounded-lg p-3 shadow-sm">
+                          <p className="text-xs font-bold text-slate-800 mb-3">{ans.questionText}</p>
+                          <div className="flex flex-col gap-2">
+                             <div className="text-xs px-2.5 py-1.5 bg-red-50 text-red-700 rounded border border-red-100 font-bold flex justify-between items-center">
+                               <span>Candidate:</span>
+                               <span className="uppercase tracking-wide">{ans.answerText}</span>
+                             </div>
+                             <div className="text-xs px-2.5 py-1.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold flex justify-between items-center">
+                               <span>Required:</span>
+                               <span className="uppercase tracking-wide">{ans.preferredAnswer}</span>
+                             </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* AI Insights Module */}
                 {(selectedApplication.matchScore !== null && selectedApplication.matchScore !== undefined) && (
@@ -259,6 +388,35 @@ export function PipelineBoard() {
                         );
                       } catch (e) { return null; }
                     })()}
+                  </div>
+                )}
+
+                {/* Cross-Job Intelligence Component */}
+                {selectedApplication.crossJobRecommendations && selectedApplication.crossJobRecommendations.length > 0 && (
+                  <div className="mb-8">
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center mb-4">
+                      <span className="mr-2">🔄</span> Cross-Job Mobility
+                    </h4>
+                    <div className="space-y-3">
+                      {selectedApplication.crossJobRecommendations.map((rec, idx) => (
+                        <div key={idx} className={`p-4 rounded-xl border ${rec.matchScore >= 80 ? 'bg-indigo-50/50 border-indigo-200' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className="flex justify-between items-center mb-2">
+                            <h5 className="font-bold text-sm text-slate-800 pr-2">{rec.jobTitle}</h5>
+                            <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${rec.matchScore >= 80 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-700'}`}>
+                              {rec.matchScore}% Match
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed font-medium">{rec.reasoning}</p>
+                          {rec.matchScore >= 80 && (
+                            <div className="mt-3 text-right">
+                              <button className="text-[11px] uppercase tracking-wider font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded transition-colors shadow-sm">
+                                Move to Pipeline
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

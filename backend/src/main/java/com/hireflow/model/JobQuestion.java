@@ -22,4 +22,10 @@ public class JobQuestion {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private QuestionType type;
+
+    @Column(name = "is_dealbreaker", columnDefinition = "boolean default false")
+    private Boolean isDealbreaker = false;
+
+    @Column(name = "preferred_answer")
+    private String preferredAnswer;
 }

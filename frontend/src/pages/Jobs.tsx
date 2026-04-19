@@ -26,7 +26,7 @@ export function JobsPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newDepartment, setNewDepartment] = useState('');
   const [newDescription, setNewDescription] = useState('');
-  const [questions, setQuestions] = useState<{questionText: string, type: 'TEXT' | 'YES_NO'}[]>([]);
+  const [questions, setQuestions] = useState<{questionText: string, type: 'TEXT' | 'YES_NO', isDealbreaker: boolean, preferredAnswer: 'YES' | 'NO'}[]>([]);
   const [createError, setCreateError] = useState('');
 
   const fetchJobs = async () => {
@@ -139,40 +139,80 @@ export function JobsPage() {
           <div className="space-y-3 pt-2">
             <h3 className="text-sm font-semibold text-slate-800">Custom Questions (Optional)</h3>
             {questions.map((q, idx) => (
-              <div key={idx} className="flex items-center gap-3">
-                <Input 
-                  value={q.questionText}
-                  onChange={(e) => {
-                    const newQ = [...questions];
-                    newQ[idx].questionText = e.target.value;
-                    setQuestions(newQ);
-                  }}
-                  placeholder="e.g. Why do you want this role?"
-                />
-                <select 
-                  value={q.type}
-                  onChange={(e) => {
-                    const newQ = [...questions];
-                    newQ[idx].type = e.target.value as 'TEXT' | 'YES_NO';
-                    setQuestions(newQ);
-                  }}
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white"
-                >
-                  <option value="TEXT">Text Answer</option>
-                  <option value="YES_NO">Yes / No</option>
-                </select>
-                <button 
-                  type="button"
-                  onClick={() => setQuestions(questions.filter((_, i) => i !== idx))}
-                  className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+              <div key={idx} className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-2">
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <Input 
+                      value={q.questionText}
+                      onChange={(e) => {
+                        const newQ = [...questions];
+                        newQ[idx].questionText = e.target.value;
+                        setQuestions(newQ);
+                      }}
+                      placeholder="e.g. Do you require visa sponsorship?"
+                    />
+                    <select 
+                      value={q.type}
+                      onChange={(e) => {
+                        const newQ = [...questions];
+                        newQ[idx].type = e.target.value as 'TEXT' | 'YES_NO';
+                        setQuestions(newQ);
+                      }}
+                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white"
+                    >
+                      <option value="TEXT">Text Answer</option>
+                      <option value="YES_NO">Yes / No</option>
+                    </select>
+                    <button 
+                      type="button"
+                      onClick={() => setQuestions(questions.filter((_, i) => i !== idx))}
+                      className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  {q.type === 'YES_NO' && (
+                    <div className="flex items-center gap-4 bg-white p-2 rounded border border-slate-200 text-sm pl-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={q.isDealbreaker}
+                          onChange={(e) => {
+                            const newQ = [...questions];
+                            newQ[idx].isDealbreaker = e.target.checked;
+                            setQuestions(newQ);
+                          }}
+                          className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900"
+                        />
+                        <span className="font-semibold text-slate-700">Mark as Dealbreaker</span>
+                      </label>
+                      
+                      {q.isDealbreaker && (
+                        <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
+                          <span className="text-slate-500 font-medium">Preferred Answer:</span>
+                          <select
+                            value={q.preferredAnswer}
+                            onChange={(e) => {
+                              const newQ = [...questions];
+                              newQ[idx].preferredAnswer = e.target.value as 'YES' | 'NO';
+                              setQuestions(newQ);
+                            }}
+                            className="px-2 py-1 text-xs border border-slate-200 rounded font-semibold focus:outline-none"
+                          >
+                            <option value="YES">Yes</option>
+                            <option value="NO">No</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
             <button 
                type="button" 
-               onClick={() => setQuestions([...questions, {questionText: '', type: 'TEXT'}])}
+               onClick={() => setQuestions([...questions, {questionText: '', type: 'TEXT', isDealbreaker: false, preferredAnswer: 'YES'}])}
                className="inline-flex items-center justify-center font-medium transition-colors bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 rounded-lg px-4 py-2 text-sm"
             >
               <Plus className="w-4 h-4 mr-2" /> Add Question

@@ -29,6 +29,13 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.getApplicationsForJob(jobId, userDetails.getOrgId()));
     }
 
+    @GetMapping("/job/{jobId}/insights")
+    public ResponseEntity<com.hireflow.dto.InsightsResponse> getJobInsights(
+            @PathVariable UUID jobId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(applicationService.getJobInsights(jobId, userDetails.getOrgId()));
+    }
+
     @PostMapping
     public ResponseEntity<ApplicationResponse> createApplication(
             @Valid @RequestBody ApplicationRequest request,
