@@ -158,17 +158,28 @@ export function PipelineBoard() {
           ))}
         </div>
 
-        <div className="relative w-full md:w-80 shrink-0">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-slate-400" />
+        <div className="flex w-full md:w-auto gap-3 shrink-0">
+          <select 
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as 'matchScore' | 'newest')}
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm font-medium bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          >
+            <option value="matchScore">Top Matches First</option>
+            <option value="newest">Newest First</option>
+          </select>
+
+          <div className="relative w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400"
+              placeholder="Search candidate email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-slate-400"
-            placeholder="Search candidate email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </div>
       </div>
 
