@@ -30,6 +30,7 @@ export function PipelineBoard() {
   
   const [selectedStage, setSelectedStage] = useState<Stage | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState<'matchScore' | 'newest'>('matchScore');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   const fetchData = async () => {
@@ -40,7 +41,7 @@ export function PipelineBoard() {
       
       const [jobRes, appsRes] = await Promise.all([
         api.get(`/jobs/${jobId}`),
-        api.get(`/applications/job/${jobId}`)
+        api.get(`/applications/job/${jobId}/ranked-applications`)
       ]);
       
       setJob(jobRes.data);
@@ -89,11 +90,21 @@ export function PipelineBoard() {
   }
 
   // Filter Applications
-  const filteredApps = applications.filter(app => {
+  let filteredApps = applications.filter(app => {
     const matchesStage = selectedStage === 'ALL' || app.stage === selectedStage;
     const matchesEmail = app.candidateEmail.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStage && matchesEmail;
   });
+
+  // Sort Applications
+  if (sortMode === 'newest') {
+    filteredApps = [...filteredApps].sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime());
+  } else if (sortMode === 'matchScore') {
+    filteredApps = [...filteredApps].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+  }
+
+  const topCandidates = filteredApps.filter(app => app.isTopCandidate);
+  const otherCandidates = filteredApps.filter(app => !app.isTopCandidate);
 
   return (
     <div className="flex flex-col animate-in fade-in ease-out duration-300">
@@ -150,6 +161,25 @@ export function PipelineBoard() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        <div className="flex bg-slate-100 p-1 rounded-lg overflow-x-auto shrink-0 border border-slate-200 ml-auto">
+           <button
+             onClick={() => setSortMode('matchScore')}
+             className={`px-4 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-all ${
+               sortMode === 'matchScore' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+             }`}
+           >
+             AI Match Score
+           </button>
+           <button
+             onClick={() => setSortMode('newest')}
+             className={`px-4 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-all ${
+               sortMode === 'newest' ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+             }`}
+           >
+             Newest
+           </button>
+        </div>
       </div>
 
       {/* Grid View */}
@@ -164,15 +194,64 @@ export function PipelineBoard() {
            </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-12">
-          {filteredApps.map((app) => (
-            <ApplicationCard
-              key={app.id}
-              application={app}
-              onUpdateStage={handleUpdateStage}
-              onClick={setSelectedApplication}
-            />
-          ))}
+        <div className="pb-12 space-y-8">
+          
+          {/* Top Candidates Section */}
+          {(topCandidates.length > 0 && sortMode === 'matchScore') && (
+            <section className="bg-amber-50/50 border border-amber-100 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-extrabold text-amber-800 uppercase tracking-wider mb-4 flex items-center">
+                <span className="mr-2 text-amber-500 text-lg">⭐</span> Top Candidates
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {topCandidates.map((app, index) => (
+                  <div key={app.id} className="relative">
+                    <div className="absolute -top-3 -left-3 z-10 bg-amber-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow-sm">
+                      #{index + 1}
+                    </div>
+                    <ApplicationCard
+                      application={app}
+                      onUpdateStage={handleUpdateStage}
+                      onClick={setSelectedApplication}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Other Candidates Section */}
+          <section>
+            {(topCandidates.length > 0 && sortMode === 'matchScore') && (
+               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 ml-1">Other Applications</h3>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {otherCandidates.map((app, index) => {
+                 // For newest sorting or non-top, just generic rendering. If sorted by newest, topCandidates is theoretically empty if we turn off top candidates section.
+                 // Actually, if sortMode === 'newest', we should probably just render ALL apps in one huge list. Let's do that cleanly.
+                 return null; // Handled below
+              })}
+              
+              {sortMode === 'matchScore' ? (
+                otherCandidates.map((app) => (
+                  <ApplicationCard
+                    key={app.id}
+                    application={app}
+                    onUpdateStage={handleUpdateStage}
+                    onClick={setSelectedApplication}
+                  />
+                ))
+              ) : (
+                filteredApps.map((app) => (
+                  <ApplicationCard
+                    key={app.id}
+                    application={app}
+                    onUpdateStage={handleUpdateStage}
+                    onClick={setSelectedApplication}
+                  />
+                ))
+              )}
+            </div>
+          </section>
         </div>
       )}
 
