@@ -37,8 +37,8 @@ public class PublicController {
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<Void> applyForJob(@Valid @RequestBody PublicApplyRequest request) {
-        publicService.applyForJob(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<UUID> applyForJob(@Valid @RequestBody PublicApplyRequest request) {
+        UUID applicationId = publicService.applyForJob(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(applicationId);
     }
 }

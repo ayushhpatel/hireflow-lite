@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
@@ -13,6 +13,7 @@ interface Job {
 
 export function JobApplyPage() {
   const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
   
   const [formData, setFormData] = useState({
@@ -77,16 +78,16 @@ export function JobApplyPage() {
         answerText: answers[qId]
       }));
 
-      await api.post('/public/apply', {
+      const res = await api.post('/public/apply', {
         jobId,
         ...formData,
         resumeUrl: finalResumeUrl,
         answers: answersArray
       });
-      setIsSuccess(true);
-      setFormData({ name: '', email: '', phone: '', resumeUrl: '' });
-      setResumeFile(null);
-      setAnswers({});
+      
+      const newApplicationId = res.data;
+      navigate(`/screening/${newApplicationId}`);
+      
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {

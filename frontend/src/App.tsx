@@ -8,6 +8,7 @@ import { CandidatesPage } from './pages/Candidates';
 import { CandidateDetail } from './pages/CandidateDetail';
 import { CareersPage } from './pages/Careers';
 import { JobApplyPage } from './pages/JobApply';
+import { ScreeningChat } from './pages/ScreeningChat';
 
 function App() {
   return (
@@ -20,6 +21,9 @@ function App() {
         {/* Public Routes */}
         <Route path="/careers" element={<CareersPage />} />
         <Route path="/careers/:jobId" element={<JobApplyPage />} />
+        
+        {/* Pre-Screening Interactive Loop */}
+        <Route path="/screening/:applicationId" element={<ScreeningChat />} />
         
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="/dashboard/jobs" replace />} />
