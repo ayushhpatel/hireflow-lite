@@ -76,7 +76,7 @@ public class PublicService {
     }
 
     @Transactional
-    public void applyForJob(PublicApplyRequest request) {
+    public UUID applyForJob(PublicApplyRequest request) {
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
                 
@@ -134,6 +134,8 @@ public class PublicService {
 
         // Dispatch an event to process AI Matching strictly after the DB transaction commits
         eventPublisher.publishEvent(new ApplicationCreatedEvent(application.getId()));
+        
+        return application.getId();
     }
 
     public record ApplicationCreatedEvent(UUID applicationId) {}
