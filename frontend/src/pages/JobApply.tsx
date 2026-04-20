@@ -29,7 +29,6 @@ export function JobApplyPage() {
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -148,23 +147,7 @@ export function JobApplyPage() {
           Back to all careers
         </Link>
 
-        {isSuccess ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-green-100 p-8 text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900">Application Submitted!</h2>
-            <p className="text-slate-500 max-w-md mx-auto">
-              Thank you for applying to the {job?.title} position. Our team will review your application and be in touch soon.
-            </p>
-            <div className="pt-4">
-              <Link to="/careers">
-                <Button>Browse more roles</Button>
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-8">
+        <div className="space-y-8">
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="p-8 sm:p-10 border-b border-slate-100 bg-slate-50/50">
                 <div className="flex items-center gap-3 mb-4">
@@ -328,7 +311,6 @@ export function JobApplyPage() {
             </div>
           </div>
         </div>
-        )}
       </div>
     </div>
   );
