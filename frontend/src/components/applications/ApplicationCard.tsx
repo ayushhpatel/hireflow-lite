@@ -32,6 +32,10 @@ export interface Application {
   skills: string | null;
   isTopCandidate?: boolean;
   hasContradictions?: boolean;
+  screeningCompleted?: boolean;
+  screeningScore?: number;
+  screeningSummary?: string;
+  screeningTranscript?: string;
   crossJobRecommendations?: ApplicationRecommendation[];
 }
 

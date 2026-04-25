@@ -77,7 +77,7 @@ export function ScreeningChat() {
       });
       
       setMessages((prev) => [...prev, res.data.message]);
-      if (res.data.isCompleted) {
+      if (res.data.isCompleted || res.data.completed) {
         setIsCompleted(true);
       }
     } catch (err) {

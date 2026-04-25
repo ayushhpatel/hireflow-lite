@@ -213,6 +213,10 @@ public class ApplicationService {
                             return false;
                         }))
                 .crossJobRecommendations(parsedRecs)
+                .screeningCompleted(app.getScreeningCompleted() != null && app.getScreeningCompleted())
+                .screeningScore(app.getScreeningScore())
+                .screeningSummary(app.getScreeningSummary())
+                .screeningTranscript(app.getScreeningTranscript())
                 .build();
     }
 }

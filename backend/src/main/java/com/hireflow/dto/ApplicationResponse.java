@@ -25,6 +25,11 @@ public class ApplicationResponse {
     private String skills;
     private Boolean isTopCandidate;
     private Boolean hasContradictions;
+    
+    private Boolean screeningCompleted;
+    private Integer screeningScore;
+    private String screeningSummary;
+    private String screeningTranscript;
 
     private List<RecommendationDTO> crossJobRecommendations;
 
