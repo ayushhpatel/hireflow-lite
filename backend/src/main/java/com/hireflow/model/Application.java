@@ -40,6 +40,19 @@ public class Application {
     @Column(name = "skills")
     private String skills;
 
+    @Builder.Default
+    @Column(name = "screening_completed", nullable = false)
+    private Boolean screeningCompleted = false;
+
+    @Column(name = "screening_score")
+    private Integer screeningScore;
+
+    @Column(name = "screening_summary", columnDefinition = "TEXT")
+    private String screeningSummary;
+
+    @Column(name = "screening_transcript", columnDefinition = "TEXT")
+    private String screeningTranscript;
+
     @CreationTimestamp
     @Column(name = "applied_at", updatable = false)
     private LocalDateTime appliedAt;

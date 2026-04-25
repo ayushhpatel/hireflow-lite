@@ -27,6 +27,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ApplicationRepository applicationRepository;
     private final OpenAIService openAiService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ChatStartResponse startSession(UUID applicationId) {
@@ -52,6 +53,7 @@ public class ChatService {
                 "Job Description:\n" + jobDesc + "\n\n" +
                 "Candidate Gaps:\n" + gaps + "\n\n" +
                 "Ask ONE concise, relevant question focusing on evaluating the candidate, especially around missing skills.\n" +
+                "CRITICAL INSTRUCTION: You MUST ONLY output the raw conversational question itself to the candidate. Do NOT output internal thoughts, analysis, or 'Next prompt:' headers. Just the message.\n" +
                 "Be conversational and professional.";
 
         String aiResponseText = openAiService.getChatCompletion(systemPrompt, "Introduce yourself and ask your first question.");
@@ -107,11 +109,12 @@ public class ChatService {
                 "Ask the next best question to evaluate the candidate.\n" +
                 "Rules:\n" +
                 "- Ask only ONE question\n" +
-                "- Keep it concise\n" +
-                "- Focus on missing skills or weak areas\n" +
+                "- Keep it concise and natural\n" +
+                "- Focus exclusively on missing skills or weak areas\n" +
                 "- Do NOT repeat questions\n" +
-                "- Max total questions you can ask is 4 or 5\n" +
-                "- If enough info gathered, respond exactly with: 'Thank you, that’s all for now.'";
+                "- Max total questions you can ask is 3.\n" +
+                "- If you have asked 3 questions, or if enough info is gathered, you MUST respond exactly with the phrase: \"Thank you, that's all for now.\"\n" +
+                "- CRITICAL INSTRUCTION: You MUST ONLY output the raw conversational message itself to the candidate. Do NOT output your internal thoughts, analysis, or 'Next prompt:' headers. Output JUST the message.";
 
         String aiResponseText = openAiService.getChatCompletion(systemPrompt, "Analyze history and provide the next prompt or end the interview.");
 
@@ -122,11 +125,14 @@ public class ChatService {
                 .build();
         chatMessageRepository.save(aiMessage);
 
-        boolean isCompleted = aiResponseText.contains("that’s all for now");
-        if (isCompleted || history.size() >= 10) { // Safety cap at 10 total messages
+        boolean isCompleted = aiResponseText.toLowerCase().contains("that's all for now") || aiResponseText.toLowerCase().contains("that’s all for now");
+        if (isCompleted || history.size() >= 8) { // Safety cap at 8 total messages
             session.setStatus(ChatStatus.COMPLETED);
             chatSessionRepository.save(session);
             isCompleted = true;
+            
+            // Asynchronously dispatch pipeline evaluation strictly AFTER commit
+            eventPublisher.publishEvent(new EvaluationService.EvaluationEvent(session.getId()));
         }
 
         ChatReplyResponse reply = ChatReplyResponse.builder()

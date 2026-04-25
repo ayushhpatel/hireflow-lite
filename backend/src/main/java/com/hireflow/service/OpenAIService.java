@@ -60,6 +60,35 @@ public class OpenAIService {
         return "Thank you for that response. Is there anything else you'd like to highlight regarding your skills?";
     }
 
+    public String getStructuredJsonCompletion(String systemPrompt, String userPrompt) throws Exception {
+        if (openAiApiKey == null || openAiApiKey.trim().isEmpty()) {
+            log.warn("OPENAI_API_KEY is not set. OpenAI proxy simulating fallback evaluation.");
+            return "{ \"score\": 65, \"summary\": \"Automated fallback evaluation. Candidates require actual OpenAI API interactions to formally score confidence and abilities.\" }";
+        }
+
+        Map<String, Object> reqBody = Map.of(
+                "model", apiModel,
+                "response_format", Map.of("type", "json_object"),
+                "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", userPrompt)
+                )
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(reqBody, headers);
+        OpenAiResponse response = restTemplate.postForObject(apiUrl, request, OpenAiResponse.class);
+        
+        if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
+            return response.getChoices().get(0).getMessage().getContent().trim();
+        }
+        
+        throw new RuntimeException("OpenAI returned invalid or empty JSON mapping payload.");
+    }
+
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class OpenAiResponse {

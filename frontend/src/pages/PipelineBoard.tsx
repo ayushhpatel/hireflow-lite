@@ -40,6 +40,28 @@ export function PipelineBoard() {
   const [sortMode, setSortMode] = useState<'matchScore' | 'newest'>('matchScore');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
+  // Background poller for live AI evaluation tracking
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (selectedApplication && selectedApplication.screeningCompleted === false) {
+      interval = setInterval(async () => {
+        try {
+           const res = await api.get(`/applications/${selectedApplication.id}`);
+           if (res.data && res.data.screeningCompleted === true) {
+              setSelectedApplication(res.data);
+              // Also softly patch the pipeline array natively so it persists on drawer close
+              setApplications(prev => prev.map(a => a.id === res.data.id ? res.data : a));
+           }
+        } catch (e) {
+           console.error("Poller failed", e);
+        }
+      }, 3000);
+    }
+    return () => {
+       if (interval) clearInterval(interval);
+    };
+  }, [selectedApplication]);
+
   const fetchData = async () => {
     try {
       if (!jobId) return;
@@ -336,6 +358,49 @@ export function PipelineBoard() {
                     </div>
                   </div>
                 )}
+                {/* AI Automated Screening Module */}
+                <div className="mb-8">
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center mb-4">
+                    <span className="mr-2">💬</span> AI Conversational Screening
+                  </h4>
+                  {selectedApplication.screeningCompleted ? (
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold text-indigo-800 uppercase tracking-wide">Evaluation Score</span>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-bold tracking-wide ${
+                          (selectedApplication.screeningScore || 0) >= 80 ? 'bg-indigo-600 text-white shadow-sm' :
+                          (selectedApplication.screeningScore || 0) >= 60 ? 'bg-amber-100 text-amber-800' :
+                          'bg-rose-100 text-rose-800'
+                        }`}>
+                          {selectedApplication.screeningScore}%
+                        </span>
+                      </div>
+                      
+                      <div className="w-full bg-indigo-200/50 rounded-full h-2.5 mb-5 overflow-hidden">
+                        <div className="bg-indigo-600 h-2.5 transition-all duration-700 ease-out" style={{ width: `${selectedApplication.screeningScore}%` }}></div>
+                      </div>
+                      
+                      <h5 className="text-[11px] font-bold text-indigo-700 mb-1.5 uppercase tracking-wide">AI Summary</h5>
+                      <p className="text-sm text-indigo-900 font-medium leading-relaxed bg-white/60 p-4 rounded-lg border border-indigo-100">
+                        {selectedApplication.screeningSummary}
+                      </p>
+                      
+                      {selectedApplication.screeningTranscript && (
+                        <div className="mt-5">
+                          <h5 className="text-[11px] font-bold text-indigo-700 mb-1.5 uppercase tracking-wide">Transcript Log</h5>
+                          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 text-[13px] text-slate-300 font-mono leading-relaxed whitespace-pre-wrap max-h-[350px] overflow-y-auto">
+                            {selectedApplication.screeningTranscript}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-5 text-center shadow-sm">
+                       <p className="text-sm font-medium text-slate-500 mb-1">Interactive Screening not yet resolved.</p>
+                       <p className="text-xs text-slate-400">Candidate either hasn't started the screening chat or hasn't finished the full loop.</p>
+                    </div>
+                  )}
+                </div>
                 
                 {/* AI Insights Module */}
                 {(selectedApplication.matchScore !== null && selectedApplication.matchScore !== undefined) && (
