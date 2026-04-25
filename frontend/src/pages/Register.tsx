@@ -101,6 +101,13 @@ export function RegisterPage() {
               Sign in
             </Link>
           </p>
+          
+          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-sm text-slate-500">
+            <span>Looking for open roles?</span>
+            <Link to="/careers" className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors">
+              View Careers Portal
+            </Link>
+          </div>
         </div>
       </div>
       <div className="hidden lg:block relative bg-slate-900 overflow-hidden">
